@@ -1,6 +1,7 @@
 # https://docs.python.org/3/library/collections.html
 from collections import defaultdict
 from math import log
+from random import uniform
 
 def first_non_extra(ngram):
     res = ""
@@ -22,9 +23,12 @@ class NGram(object):
         self.counts = counts = defaultdict(int)
         self.word_counts = defaultdict(int)
         self.total_count = 0
+        self.probs = defaultdict(int)
+        self.sorted_probs = defaultdict(int)
+        lengths = defaultdict(int)
 
         for i in range(len(sents)):
-            sents[i] = (['<s>'] * (n - 1)) + sents[i] + (['</s>'] * n)
+            sents[i] = (['<s>'] * (n - 1)) + sents[i] + (['</s>'])
 
         for sent in sents:
             for i in range(len(sent) - n + 1):
@@ -33,6 +37,25 @@ class NGram(object):
                 ngram = tuple(sent[i: i + n])
                 counts[ngram] += 1
                 counts[ngram[:-1]] += 1
+                
+                if not ngram[:-1] in self.probs:
+                    self.probs[ngram[:-1]] = defaultdict(int)
+                (self.probs[ngram[:-1]])[ngram[len(ngram) - 1]] += 1
+                lengths[ngram[:-1]] += 1
+
+        for key, value in self.probs.items():
+            # Turn the number of occurrences into probabilities (that sum to 1,
+            # all together) inside each n-gram.
+            for k, v in value.items():
+                value[k] = v / float(lengths[key])
+
+        for key, value in self.probs.items():
+            # Once self.probs is fully processed, self.sorted_probs is easily
+            # obtainable.
+            self.sorted_probs[key] = sorted(list(value.items()), key=lambda x: (-x[1], x[0]))
+
+    def get_n(self):
+        return self.n
 
     def count(self, tokens):
         """Count for an n-gram or (n-1)-gram.
@@ -104,3 +127,44 @@ class NGram(object):
 
         tokens = prev_tokens + [token]
         return float(self.counts[tuple(tokens)]) / self.counts[tuple(prev_tokens)]
+
+
+class NGramGenerator:
+    def __init__(self, model):
+        """
+        model -- n-gram model (NGram object).
+        """
+        self.model = model
+        self.probs = defaultdict(int)
+        for key, value in self.model.word_counts.items():
+            self.probs[key] = value / float(self.model.total_count)
+        self.probs = self.model.probs
+        self.sorted_probs = self.model.sorted_probs
+        self.n = self.model.get_n()
+ 
+    def generate_sent(self):
+        """Randomly generate a sentence."""
+        prev_token = ('<s>',) * (self.n - 1)
+        assert(prev_token in self.probs.keys())
+        sent = []   
+        current_token = ''
+        while current_token != '</s>':
+            current_token = self.generate_token(prev_token)
+            if current_token != '</s>':
+                sent = sent + [current_token,]
+                prev_token = (prev_token + (current_token,))[1 : self.n]
+        return sent
+ 
+    def generate_token(self, prev_tokens=None):
+        """Randomly generate a token, given prev_tokens.
+ 
+        prev_tokens -- the previous n-1 tokens (optional only if n = 1).
+        """
+        assert(prev_tokens in self.probs.keys())
+        x = uniform(0.0, 1.0)
+        acc = 0.0
+        for k, v in self.probs[prev_tokens].items():
+            if acc + v >= x:
+                return k
+            else:
+                acc += v
