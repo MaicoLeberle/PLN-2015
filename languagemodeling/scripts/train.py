@@ -26,6 +26,7 @@ if __name__ == '__main__':
                                                 \t\t\taddone: N-grams with add-one smoothing.\
                                                 \t\t\tinterpolated: Smoothing by interpolation.", metavar="<model>")
     parser.add_option("-n", dest="n", help="Order of the model.", metavar="<n>")
+    parser.add_option("--testing", dest="testing", action="store_true", default=False, help="Use only 90% of the corpus for training. Keep 10% for testing.")
     (options, args) = parser.parse_args()
     file_on = not options.file is None
     n_on = not options.n is None
@@ -48,16 +49,16 @@ if __name__ == '__main__':
     if (not file_on or not n_on):
         sys.exit(0)
 
-    sents = list(brown.sents())
-    # print("type(sents): " + str(type(sents)))
-    # assert(False)
+    if (options.testing):
+        sents = list(brown.sents())[:int(len(brown.sents()) * 0.9)]
+    else:
+        sents = list(brown.sents())
+
     if (options.model == 'ngram'):
         model = NGram(int(options.n), sents)
     elif (options.model == 'addone'):
         model = AddOneNGram(int(options.n), sents)
     else:
-        # Creating a smoothing with interpolation model with default gamma 
-        # (estimated using held-out data) and unigram addone smoothing.
         model = InterpolatedNGram(int(options.n), sents)
 
     try:
