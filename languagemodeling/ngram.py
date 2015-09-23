@@ -86,7 +86,7 @@ class NGram(EvaluatingClass):
  
         tokens -- the n-gram or (n-1)-gram tuple.
         """
-        return (self.counts[tokens])
+        return (self.counts[tuple(tokens)])
  
     def cond_prob(self, token, prev_tokens=None):
         """Conditional probability of a token.
@@ -338,7 +338,7 @@ class InterpolatedNGram (EvaluatingClass):
                 for i in range(len(sent) - n + 1):
                     ngram = tuple(sent[i: i + n])
                     self.counts_prime[ngram] += 1
-            self.gamma = self.__compute_gamma(held_out)
+            self.__compute_gamma(held_out)
 
     def count(self, tokens):
         """Count for an n-gram or (n-1)-gram.
@@ -454,22 +454,23 @@ class InterpolatedNGram (EvaluatingClass):
         """ Compute gamma parameter for the model with the development set 
             (a.k.a. held-out data).
         """
-        gammas = list(range(1, 10001, 500))
-        best_gamma = gammas[0]
-        best_result = self.__compute_log_likelihood(gamma=gammas[0])
-        for g in gammas:
-            current_result = self.__compute_log_likelihood(gamma=g)
+        self.gamma = best_gamma = 1
+        best_result = self.__compute_log_likelihood()
+
+        for g in list(range(1, 1000, 50)):
+            self.gamma = g
+            current_result = self.__compute_log_likelihood()
             if current_result > best_result:
                 best_result = current_result
                 best_gamma = g
-        return (best_gamma)
 
-    def __compute_log_likelihood(self, gamma):
+        self.gamma = best_gamma
+
+    def __compute_log_likelihood(self):
         """ Change self.gamma and compute log-likelihood.
             Restor self.gamma to its previous value, and return the 
             log-likelihood value obtained.
         """
-        self.gamma = gamma
         log_likelihood = 0.0
 
         for key, value in self.counts_prime.items():
@@ -496,11 +497,11 @@ class BackOffNGram(EvaluatingClass):
         if (beta is None):
             # Training is performed with 90% of sents, and last 10% of the 
             # corpus is reserved as held-out data for estimating beta.
-            training = sents[:int(len(sents) * 0.9)]
+            training = list(sents[:int(len(sents) * 0.9)])
         else:
             # If beta is already provided, use sents as training set. No need
             # for held-out data.
-            training = sents
+            training = list(sents)
             self.beta = beta
 
         self.addone = addone
@@ -515,6 +516,7 @@ class BackOffNGram(EvaluatingClass):
         self.total_count = 0
         self.number_token_options = defaultdict(int)
 
+
         for i in range(len(training)):
             if training[i][-1] != '</s>':
                 training[i] = training[i] + ['</s>']
@@ -524,14 +526,13 @@ class BackOffNGram(EvaluatingClass):
             for i in range(len(sent) - n + 1):
                 self.total_count += 1
                 ngram = tuple(sent[i: i + n])
-                for j in range(len(ngram)):
-                    # Note that len(ngram) = n.
-                    # Thus, every n-gram, (n-1)-gram, ...
-                    #   , (n-(n-2))-gram = 2-gram is registered in self.counts.
-                    # The registrations of 1-grams and the 0-gram are done
-                    # in self.unigram_model (be it with add-one smoothing or 
-                    # not).
-                    self.counts[ngram[j:]] += 1
+                for j in range(len(ngram) + 1):
+                    self.counts[ngram[:j]] += 1
+            # Remaining computations related to the last ngram, in reverse 
+            # order.
+            ngram = tuple(sent[len(sent) - n:])
+            for j in range(1, len(ngram)):
+                self.counts[ngram[j:]] += 1
 
         if (beta is None):
             # Computing of beta parameter from held-out data is now 
@@ -562,10 +563,7 @@ class BackOffNGram(EvaluatingClass):
  
             tokens -- the k-gram tuple.
         """
-        if (len(tokens) < 2):
-            return self.unigram_model.count(tokens=tuple(tokens))
-        else:
-            return (self.counts[tuple(tokens)])
+        return (self.counts[tuple(tokens)])
 
     def cond_prob(self, token, prev_tokens=None):
         """ Conditional probability of a token, given its context, and using 
@@ -581,19 +579,28 @@ class BackOffNGram(EvaluatingClass):
             return self.unigram_model.cond_prob(token=token)
         elif (len(prev_tokens) == 1):
             if (token in self.A(prev_tokens)):
-                return (self.__count_star(prev_tokens + [token]) / float(self.count(prev_tokens)))
+                res = self.__count_star(prev_tokens + [token])
+                res /= float(self.count(prev_tokens))
             else:
-                # MAXIMUM LIKELIHOOD, o (addone o ngram)???
-                norm = self.__max_likelihood_prob(token=token, 
-                    prev_tokens=prev_tokens[1:]) / self.denom(prev_tokens)
-                return (self.alpha(prev_tokens) * norm)
+                try:
+                    res = self.__max_likelihood_prob(token=token, 
+                        prev_tokens=prev_tokens[1:]) 
+                    res /= self.denom(prev_tokens)
+                    res *=  self.alpha(prev_tokens)
+                except ZeroDivisionError:
+                    res = 0.0
         else:
             if (token in self.A(prev_tokens)):
-                return (self.__count_star(prev_tokens + [token]) / float(self.count(prev_tokens)))
+                res = self.__count_star(prev_tokens + [token]) / float(self.count(prev_tokens))
             else:
-                norm = self.cond_prob(token=token, 
-                    prev_tokens=prev_tokens[1:]) / self.denom(prev_tokens)
-                return (self.alpha(prev_tokens) * norm)
+                try:
+                    res = self.cond_prob(token=token, 
+                        prev_tokens=prev_tokens[1:]) 
+                    res /= self.denom(prev_tokens)
+                    res *= self.alpha(prev_tokens)
+                except ZeroDivisionError:
+                    res = 0.0
+        return (res)
 
     def sent_prob(self, sent):
         """ Probability of a sentence. Warning: subject to underflow problems.
@@ -631,59 +638,63 @@ class BackOffNGram(EvaluatingClass):
  
             tokens -- the k-gram tuple.
         """
-        return ([tuple_tokens[-1:] for tuple_tokens, quantity in self.counts.items() if (quantity > 0)])
+        res = [gram[-1] for gram in self.counts.keys()   
+                if  tuple(tokens) == tuple(gram[:-1])
+                and self.counts[gram] > 0]
+        return (set(res))
  
     def alpha(self, tokens):
         """ Missing probability mass for a k-gram with 0 < k < n.
  
             tokens -- the k-gram tuple.
         """
-        A = self.A(tokens)
-        sum_norm_disc = 0.0
-        for token in A:
-            sum_norm_disc += self.__count_star(tokens + [token]) / float(self.count(tokens))
-        
-        return (1 - sum_norm_disc)
+        try:
+            return (self.beta * len(self.A(tokens)) / self.count(tuple(tokens)))
+        except ZeroDivisionError:
+            return (0)
  
     def denom(self, tokens):
         """ Normalization factor for a k-gram with 0 < k < n.
  
             tokens -- the k-gram tuple.
         """
-        A = self.A(tokens)
         sum_cond_prob = 0.0
 
         if (len(tokens) > 1):
-            for token in A:
-                sum_cond_prob += self.cond_prob(tokens[1:] + [token])
+            for token in self.A(tokens):
+                sum_cond_prob += self.cond_prob(token=token, prev_tokens=tokens[1:])
         else:
-            for token in A:
-                sum_cond_prob += self.__max_likelihood_prob([token])
-
+            for token in self.A(tokens):
+                sum_cond_prob += self.__max_likelihood_prob(token=token)
         return (float(1 - sum_cond_prob))
 
     def __compute_beta(self, devel_set):
         """ Compute beta parameter for the model with the development set 
             (a.k.a. held-out data).
         """
-        prev_perplexity = 0.0
-        opt_beta = 0.0
-        first = True
+        self.beta = best_beta = 0.1 
+        best_perplexity = self.perplexity(devel_set)
 
         for beta in [(x+1) / 10.0 for x in range(10)]:
             self.beta = beta
-            # Now beta is set, prepare every piece of data needed to compute 
-            # the perplexity corresponded to self.beta.
-            # self.__compute_cond_prob()
             current_perp = self.perplexity(devel_set)
-            if first or current_perp < prev_perplexity:
-                prev_perplexity = current_perp
-                opt_beta = beta
-                first = False
+            if current_perp < best_perplexity:
+                best_perplexity = current_perp
+                best_beta = beta
 
-        # Set beta to the optimizing value, and recompute all that's needed.
-        self.beta = opt_beta
-        # self.__compute_cond_prob()
+        self.beta = best_beta
+
+    def __compute_log_likelihood(self):
+        """ Change self.gamma and compute log-likelihood.
+            Restor self.gamma to its previous value, and return the 
+            log-likelihood value obtained.
+        """
+        log_likelihood = 0.0
+
+        for key, value in self.counts_prime.items():
+            log_likelihood += value * log (self.cond_prob(token=key[-1], prev_tokens=key[:-1]))
+
+        return (log_likelihood)
 
     def __max_likelihood_prob(self, token, prev_tokens=None):
         """ Conditional probability of a token, corresponding to the maximum 
@@ -692,9 +703,11 @@ class BackOffNGram(EvaluatingClass):
         if prev_tokens is None or len(prev_tokens) == 0:
             prev_tokens = []
 
-        ngram = tuple((['<s>'] * (self.n - 1 - len(prev_tokens))) + list(prev_tokens) + [token])
-
-        return (self.count(ngram) / float(self.count(tuple(prev_tokens))))
+        if (prev_tokens == []):
+            return self.unigram_model.cond_prob(token=token, prev_tokens=prev_tokens)
+        else:
+            ngram = tuple((['<s>'] * (self.n - 1 - len(prev_tokens))) + list(prev_tokens) + [token])
+            return (self.count(ngram) / float(self.count(tuple(prev_tokens))))
 
     def __count_star(self, tokens):
         """ Discounted count of a k-gram, with 1 < k <= n.
