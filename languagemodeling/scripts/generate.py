@@ -1,3 +1,13 @@
+""" Generate sentences from a n-gram language model.
+
+Usage: generate.py [options]
+
+Options:
+  -h, --help  show this help message and exit
+  -i <file>   Language model file.
+  -n <n>      Number of sentences to generate.
+"""
+
 import sys
 import pickle
 from optparse import OptionParser
