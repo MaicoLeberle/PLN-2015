@@ -62,7 +62,7 @@ class TestAddOneNGram(TestCase):
             self.assertEqual(model.count(gram), c, gram)
 
         # size of the vocabulary
-       self.assertEqual(model.V(), 9)
+        self.assertEqual(model.V(), 9)
 
     def test_cond_prob_1gram(self):
         model = AddOneNGram(1, self.sents)

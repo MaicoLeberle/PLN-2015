@@ -22,9 +22,11 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-o", dest="file", help="Output model file.", metavar="<file>")
     parser.add_option("-m", dest="model", help="Model to use [default: ngram]:\n \
-                                                \t\t\tngram: Unsmoothed n-grams.\
-                                                \t\t\taddone: N-grams with add-one smoothing.\
-                                                \t\t\tinterpolated: Smoothing by interpolation.", metavar="<model>")
+                    \t\t\tngram: Unsmoothed n-grams.\
+                    \t\t\taddone: N-grams with add-one smoothing.\
+                    \t\t\tinterpolated: Smoothing by interpolation.\
+                    \t\t\tbackoff: Smoothing by back-off with discounting."
+                    , metavar="<model>")
     parser.add_option("-n", dest="n", help="Order of the model.", metavar="<n>")
     parser.add_option("--testing", dest="testing", action="store_true", default=False, help="Use only 90% of the corpus for training. Keep 10% for testing.")
     (options, args) = parser.parse_args()
@@ -34,7 +36,8 @@ if __name__ == '__main__':
     # Checking model option.
     if (options.model is None):
         options.model = 'ngram'
-    if (options.model != 'ngram' and options.model != 'addone' and options.model != 'interpolated'):
+    if (options.model != 'ngram' and options.model != 'addone' and
+             options.model != 'interpolated' and options.model != 'backoff'):
         print("Invalid model.")
         parser.print_help()
         sys.exit(0)
@@ -47,10 +50,14 @@ if __name__ == '__main__':
     if (not n_on):
         print("\t* Order of the model")
     if (not file_on or not n_on):
+        print()
+        parser.print_help()
         sys.exit(0)
 
     if (options.testing):
+        # The last 10% of the corpus is the test set.
         sents = list(brown.sents())[:int(len(brown.sents()) * 0.9)]
+    
     else:
         sents = list(brown.sents())
 
@@ -58,8 +65,10 @@ if __name__ == '__main__':
         model = NGram(int(options.n), sents)
     elif (options.model == 'addone'):
         model = AddOneNGram(int(options.n), sents)
-    else:
+    elif (options.model == 'interpolated'):
         model = InterpolatedNGram(int(options.n), sents)
+    else:
+        model = BackOffNGram(int(options.n), sents)
 
     try:
         f = open(options.file, "wb")

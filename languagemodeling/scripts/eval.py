@@ -8,12 +8,6 @@ import pickle
 from nltk.corpus import brown
 from languagemodeling.ngram import NGram, AddOneNGram
 
-# log-probability = sumatoria(log_2 p(x(i)))
-# cross-entropy = - (1/M * log-probability), donde M = #tokens(inclusive </s>)
-# perplexity = 2 ^ cross-entropy
-#
-# Implementar el cálculo de estos valores en la interfaz de NGram y AddOne.
-
 if __name__ == '__main__':
 	parser = OptionParser()
 	parser.add_option("-i", dest="file", help="Language model file.", metavar="<file>")
@@ -37,7 +31,7 @@ if __name__ == '__main__':
 		sys.exit(0)
 
 	# The last 10% of the corpus is the test set.
-	test_sents = brown.sents()[int(len(brown.sents()) * 0.9):]
+	test_sents = list(brown.sents())[int(len(brown.sents()) * 0.9):]
 
 	print("log-probability: " + str(lang_model.log_probability(test_sents)))
 	print("perplexity: " + str(lang_model.perplexity(test_sents)))
