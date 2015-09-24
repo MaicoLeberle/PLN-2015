@@ -84,7 +84,91 @@ EJERCICIO 4
 Esta clase es igual de simple que NGram. La única diferencia es que 
 self.cond_prob agrega el suavizado add-one.
 
+Valores perplexity obtenidos con esta clase:
+
+  Valor de N   |   Perplexity  |
+--------------------------------
+       1       |     1042      |
+--------------------------------
+       2       |     2250      |
+--------------------------------
+       3       |     10703     |
+--------------------------------
+       4       |     13660     |
+--------------------------------
+
 
 -------------------------------------------------------------------------------
 EJERCICIO 5
 -------------------------------------------------------------------------------
+
+Aquí implementé un script para cargar un modelo desde un archivo (idealmente, 
+se trata de un modelo entrenado con languagemodeling/scripts/train.py, 
+utilizando el 90% nltk.corpus.brown) y evaluarlo sobre el test set que consiste
+ del último 10% de nltk.corpus.brown.
+El uso de este script es
+
+	python3 languagemodeling/scripts/eval.py -i <file>
+
+, donde <file> contiene el modelo entrenado (y guardado vía pickle.dump).
+
+Además, en languagemodeling/ngram.py implementé la clase EvaluatingClass, la 
+cual contiene los cálculos para log-probability, cross-entropy y perplexity. 
+De esta clase heredan las distintas clases de este práctico que requieren ser
+evaluadas.
+
+
+-------------------------------------------------------------------------------
+EJERCICIO 6
+-------------------------------------------------------------------------------
+
+Aquí se implementa el modelado de lenguajes con suavizado por interpolación. El
+ procesamiento de las oraciones del corpus de entrenamiento es más o menos 
+similar al de las previas clases, con el detalle de que ahora se deben 
+contabilizar en self.counts no sólo los n-gramas y (n-1)-gramas, sino todos los
+k-gramas con el mismo final, con 0 <= k <= n. Es decir, dado una tupla de 
+longitud n, ngram, se deben contabilizar en self.counts a ngram, ngram[1:], 
+ngram[2:], ..., ().
+Además, se utiliza sólo el 90% del training corpus (es decir, el 90% del 90% de
+ nltk.corpus.brown, si se entrena con languagemodeling/scripts/train.py) para 
+entrenar el modelo, y 10% del training corpus (10% del 90% de nltk.corpus.brown,
+ análogamente) se utiliza como held-out data para calcular el parámetro gamma 
+vía barrido. Se busca el gamma que maximiza la log-likelihood del held-out set.
+A su vez, __init__ tiene un parámetro extra, addone, que indica si el 
+procesamiento de las probabilidades de unigramas debe hacerlo un modelo 
+AddOneNGram o uno NGram. 
+
+Valores perplexity obtenidos con esta clase:
+
+  Valor de N   |   Perplexity  |
+--------------------------------
+       1       |     1026      |
+--------------------------------
+       2       |      419      |
+--------------------------------
+       3       |      961      |
+--------------------------------
+       4       |      932      |
+--------------------------------
+
+
+-------------------------------------------------------------------------------
+EJERCICIO 7
+-------------------------------------------------------------------------------
+
+Aquí se implementa el modelado de lenguajes con suavizado por Back-Off con 
+Discounting. El procesamiento de las oraciones del corpus de entrenamiento es 
+similar al de InterpolatedNGram, con la diferencia de que es preciso agregar 
+cada sub-k-grama, con 0 <= k <= n, en la oración.
+También se utiliza aquí un modelo de AddOneNGram o de NGram para el cálculo de
+probabilidades de los unigramas, y barrido para calcular el parámetro beta del
+modelo. Aquí también se busca el beta que maximiza la log-likelihood del 
+held-out set.
+Dicho beta se calcula con el 10% final del corpus de entrenamiento (10% del 90%
+ de nltk.corpus.brown, si se entrena vía languagemodeling/scripts/train.py). 
+Pero el barrido para beta es un tanto más complicado que para el gamma del 
+ejercicio anterior. Es preciso realizar memoization a medida que se van 
+computando las probabilidades condicionales (self.cond_prob), para evitar 
+recomputarlas, lo cual es sumamente costoso. Dicha memoization se realiza en 
+self.__q_D, self.__A, self.__alpha y self.__denom. 
+Por último, cabe aclarar 
