@@ -15,7 +15,7 @@ import pickle
 
 from nltk.corpus import brown
 
-from languagemodeling.ngram import NGram, AddOneNGram, InterpolatedNGram, BackO
+from languagemodeling.ngram import NGram, AddOneNGram, InterpolatedNGram, BackOffNGram
 
 
 if __name__ == '__main__':
