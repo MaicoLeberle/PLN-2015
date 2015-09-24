@@ -78,9 +78,6 @@ class NGram(EvaluatingClass):
             # obtainable.
             self.sorted_probs[key] = sorted(list(value.items()), key=lambda x: (-x[1], x[0]))
 
-    def get_n(self):
-        return (self.n)
-
     def count(self, tokens):
         """Count for an n-gram or (n-1)-gram.
  
@@ -153,7 +150,7 @@ class NGramGenerator(object):
             self.probs[key] = value / float(self.model.total_count)
         self.probs = self.model.probs
         self.sorted_probs = self.model.sorted_probs
-        self.n = self.model.get_n()
+        self.n = self.model.n
  
     def generate_sent(self):
         """Randomly generate a sentence."""
@@ -206,9 +203,6 @@ class AddOneNGram(EvaluatingClass):
                 ngram = tuple(sent[i: i + n])
                 self.counts[ngram] += 1
                 self.counts[ngram[:-1]] += 1
-                
-    def get_n(self):
-        return (self.n)
 
     def count(self, tokens):
         """Count for an n-gram or (n-1)-gram.
@@ -447,9 +441,6 @@ class InterpolatedNGram (EvaluatingClass):
         ''' Size of the vocabulary. '''
         return (len(self.word_counts))
 
-    def get_n(self):
-        return (self.n)
-
     def __compute_gamma(self, devel_set):
         """ Compute gamma parameter for the model with the development set 
             (a.k.a. held-out data).
@@ -516,7 +507,6 @@ class BackOffNGram(EvaluatingClass):
         self.total_count = 0
         self.number_token_options = defaultdict(int)
 
-
         for i in range(len(training)):
             if training[i][-1] != '</s>':
                 training[i] = training[i] + ['</s>']
@@ -533,6 +523,8 @@ class BackOffNGram(EvaluatingClass):
             ngram = tuple(sent[len(sent) - n:])
             for j in range(1, len(ngram)):
                 self.counts[ngram[j:]] += 1
+
+        self.__clear_memo()
 
         if (beta is None):
             # Computing of beta parameter from held-out data is now 
@@ -554,9 +546,6 @@ class BackOffNGram(EvaluatingClass):
             # [0.1, ..., 0.9, 1.0] that maximizes the log-likelihood of the 
             # development corpus.
             self.__compute_beta(held_out)
- 
-    def get_n(self):
-        return self.n
 
     def count(self, tokens):
         """ Count for a k-gram with 0 <= k < n.
@@ -572,11 +561,18 @@ class BackOffNGram(EvaluatingClass):
             token -- the token.
             prev_tokens -- the previous k tokens, with 0 <= k < n.
         """
-        if (prev_tokens is None):  
+        # Since memoization is implemented in this class, proceed with 
+        # computation only if this same prev_tokens-token combination has never
+        # been computed before.
+        if (prev_tokens is None or prev_tokens == tuple()):  
             prev_tokens = []
 
         if (prev_tokens == []):
             return self.unigram_model.cond_prob(token=token)
+
+        elif (tuple(list(prev_tokens) + [token]) in  self.__q_D.keys()):
+            return self.__q_D[tuple(prev_tokens + [token])]
+
         elif (len(prev_tokens) == 1):
             if (token in self.A(prev_tokens)):
                 res = self.__count_star(prev_tokens + [token])
@@ -591,7 +587,7 @@ class BackOffNGram(EvaluatingClass):
                     res = 0.0
         else:
             if (token in self.A(prev_tokens)):
-                res = self.__count_star(prev_tokens + [token]) / float(self.count(prev_tokens))
+                res = self.__count_star(list(prev_tokens) + [token]) / float(self.count(prev_tokens))
             else:
                 try:
                     res = self.cond_prob(token=token, 
@@ -600,6 +596,9 @@ class BackOffNGram(EvaluatingClass):
                     res *= self.alpha(prev_tokens)
                 except ZeroDivisionError:
                     res = 0.0
+
+        # Memorize the result for this prev_tokens-token combination.
+        self.__q_D[tuple(list(prev_tokens) + [token])] = res
         return (res)
 
     def sent_prob(self, sent):
@@ -638,26 +637,41 @@ class BackOffNGram(EvaluatingClass):
  
             tokens -- the k-gram tuple.
         """
-        res = [gram[-1] for gram in self.counts.keys()   
-                if  tuple(tokens) == tuple(gram[:-1])
-                and self.counts[gram] > 0]
-        return (set(res))
+        if (tuple(tokens) in self.__A.keys()):
+            return (self.__A[tuple(tokens)])
+
+        res = set([gram[-1] for gram in self.counts.keys()   
+                if  (len(gram) > 0 and tuple(tokens) == gram[:-1]
+                        and self.counts[gram] > 0)])
+
+        self.__A[tuple(tokens)] = res
+        return (res)
  
     def alpha(self, tokens):
         """ Missing probability mass for a k-gram with 0 < k < n.
  
             tokens -- the k-gram tuple.
         """
+
+        if (tuple(tokens) in self.__alpha.keys()):
+            return (self.__alpha[tuple(tokens)])
+
         try:
-            return (self.beta * len(self.A(tokens)) / self.count(tuple(tokens)))
+            res = self.beta * len(self.A(tokens)) / self.count(tuple(tokens))
         except ZeroDivisionError:
-            return (0)
+            res = 0.0
+
+        self.__alpha[tuple(tokens)] = res
+        return (res)
  
     def denom(self, tokens):
         """ Normalization factor for a k-gram with 0 < k < n.
  
             tokens -- the k-gram tuple.
         """
+        if (tuple(tokens) in self.__denom.keys()):
+            return (self.__denom[tuple(tokens)])
+
         sum_cond_prob = 0.0
 
         if (len(tokens) > 1):
@@ -666,18 +680,22 @@ class BackOffNGram(EvaluatingClass):
         else:
             for token in self.A(tokens):
                 sum_cond_prob += self.__max_likelihood_prob(token=token)
-        return (float(1 - sum_cond_prob))
+
+        self.__denom[tuple(tokens)] = 1.0 - sum_cond_prob
+        return (1.0 - sum_cond_prob)
 
     def __compute_beta(self, devel_set):
         """ Compute beta parameter for the model with the development set 
             (a.k.a. held-out data).
         """
         self.beta = best_beta = 0.1 
+        self.__clear_memo()
         best_perplexity = self.perplexity(devel_set)
 
-        for beta in [(x+1) / 10.0 for x in range(10)]:
+        for beta in [(x+1) / 10.0 for x in range(1,10)]:
             self.beta = beta
-            current_perp = self.perplexity(devel_set)
+            self.__clear_memo()
+            current_perp = self.__compute_log_likelihood()
             if current_perp < best_perplexity:
                 best_perplexity = current_perp
                 best_beta = beta
@@ -715,3 +733,10 @@ class BackOffNGram(EvaluatingClass):
             tokens -- the k-gram tuple.
         """
         return (self.count(tokens) - self.beta)
+
+    def __clear_memo(self):
+        # The following are for memoization purposes.
+        self.__q_D = defaultdict(float)
+        self.__alpha = defaultdict(float)
+        self.__denom = defaultdict(float)
+        self.__A = defaultdict(float)
