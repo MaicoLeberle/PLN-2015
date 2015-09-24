@@ -571,11 +571,11 @@ class BackOffNGram(EvaluatingClass):
             return self.unigram_model.cond_prob(token=token)
 
         elif (tuple(list(prev_tokens) + [token]) in  self.__q_D.keys()):
-            return self.__q_D[tuple(prev_tokens + [token])]
+            return self.__q_D[tuple(list(prev_tokens) + [token])]
 
         elif (len(prev_tokens) == 1):
             if (token in self.A(prev_tokens)):
-                res = self.__count_star(prev_tokens + [token])
+                res = self.__count_star(list(prev_tokens) + [token])
                 res /= float(self.count(prev_tokens))
             else:
                 try:
@@ -690,14 +690,14 @@ class BackOffNGram(EvaluatingClass):
         """
         self.beta = best_beta = 0.1 
         self.__clear_memo()
-        best_perplexity = self.perplexity(devel_set)
+        best_log = self.__compute_log_likelihood()
 
         for beta in [(x+1) / 10.0 for x in range(1,10)]:
             self.beta = beta
             self.__clear_memo()
-            current_perp = self.__compute_log_likelihood()
-            if current_perp < best_perplexity:
-                best_perplexity = current_perp
+            current_log = self.__compute_log_likelihood()
+            if current_log > best_log:
+                best_log = current_log
                 best_beta = beta
 
         self.beta = best_beta
@@ -707,10 +707,15 @@ class BackOffNGram(EvaluatingClass):
             Restor self.gamma to its previous value, and return the 
             log-likelihood value obtained.
         """
+        print("__compute_log_likelihood")
         log_likelihood = 0.0
 
         for key, value in self.counts_prime.items():
-            log_likelihood += value * log (self.cond_prob(token=key[-1], prev_tokens=key[:-1]))
+            try:
+                log_likelihood += value * log (self.cond_prob(token=key[-1], prev_tokens=key[:-1]))
+            except ValueError:
+                # log(0). Do not add anything to log_likelihood.
+                continue
 
         return (log_likelihood)
 
