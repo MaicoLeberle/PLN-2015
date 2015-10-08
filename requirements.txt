@@ -4,4 +4,4 @@ docopt
 nltk
 scikit-learn
 featureforge
--e .  # install our code in editing mode
+# -e .  # install our code in editing mode
