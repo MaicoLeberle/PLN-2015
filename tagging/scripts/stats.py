@@ -8,6 +8,7 @@ Options:
   -h --help     Show this screen.
 """
 from docopt import docopt
+from collections import defaultdict
 
 from corpus.ancora import SimpleAncoraCorpusReader
 
@@ -44,7 +45,9 @@ if __name__ == '__main__':
 	# compute and print the statistics
 	print("Number of sents: " + str(len(sents)))
 	# tokens_number is the number of tokens and also the number of tags.
-	tokens_number = sum(words.values())
+	tokens_number = 0
+	for word_key in words.keys():
+		tokens_number += sum([words[word_key][tag_key] for tag_key in words[word_key].keys()])
 	print("Number of words (tokens): " + str(tokens_number))
 	print("Number of distinct words: " + str(len(words_dic)))
 	print("Number of tags used: " + str(len(tags)))
@@ -61,3 +64,20 @@ if __name__ == '__main__':
 				str(appear2 / float(appear)) + "% of the tag-).")
 
 	# MISSING: Ambiguity levels of words.
+	amb_level = defaultdict(set)
+	for word in words.keys():
+		amb_level[len(words[word].items())].add(word)
+	sorted_amb_level_indexes = sorted(amb_level.keys())
+
+	print("Original tagging:")
+	for i in sorted_amb_level_indexes:
+		if (i is 1):
+			print("\t1 tag: " + str(len(amb_level[i])) + " words (" 
+				+ str(len(amb_level[i]) / float(len(words_dic))) + "%).")
+		else:
+			print("\t" + str(i) + " tags: " + str(len(amb_level[i])) 
+				+ " words (" + str(len(amb_level[i]) / float(len(words_dic)))
+					+ "%).")
+		print("\tMost frequent words with this tag:")
+		for word in (sorted(amb_level[i], key=lambda x:words_dic[x])[:5]):
+			print("\t\t" + str(word))
