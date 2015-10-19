@@ -152,7 +152,7 @@ class ViterbiTagger:
         sent -- the sentence.
         """
         self._pi[0] = dict()
-        # The probability of getting to the (n-1)-gram of <s>'s at the 
+        # The maximum probability of getting to the (n-1)-gram of <s>'s at the 
         # beginning of the analisis is 1.0 (then, the value saved will be 
         # log2(1.0) == 0). This constitutes the base case.
         self._pi[0][('<s>',) * (self.__hmm._n - 1)] = (0, [])
@@ -161,21 +161,32 @@ class ViterbiTagger:
             for n_gram in self._pi[i].keys():
                 # prob is the probability of having got to tags_so_far.
                 (log_prob, tags_so_far) = self._pi[i][n_gram]
+                # Having analized sequences of length up to i, we now analize 
+                # the maximum probability for the sequence of length (i+1).
                 self._pi[i+1] = dict()
                 for t in self.__hmm.tagset():
-                    # prev_tags will now contain the previous (n-1)-gram, 
-                    # followed in each loop by a tag in the tag set.
-                    prob = log_prob
-                    prob += math.log2(self.__hmm.trans_prob(t, n_gram))
-                    prob += math.log2(self.__hmm.out_prob(sent[i], t))
-                    # Now, self._pi[i+1] is updated. This happens if the 
-                    # current sequence of tags (namely, tags_so_far + t)'s 
-                    # probability is less than the current probability 
-                    # (namely, prob).
-                    # Notice that ngram[:1] + (t,) is the (n-1)-gram created 
-                    # with the (n-2) last tags from ngram followed by t.
-                    if ((not t in self._pi[i+1].keys()) or (self._pi[i+1][n_gram[:1] + (t,)][0] < log_prob)):
-                            self._pi[i+1][n_gram[:1] + (t,)] = (log_prob, tags_so_far + (t,))
+                    # c_tags (from "current tags") contains the sequence of 
+                    # tags of length (i+1) that is being analized now.
+                    c_tags = tuple(n_gram[1:]) + (t,)
+                    # pos_max contains the maximum probability for c_tags.
+                    pos_max = log_prob
+                    try:
+                        pos_max += math.log2(self.__hmm.trans_prob(t, n_gram))
+                        pos_max += math.log2(self.__hmm.out_prob(sent[i], t))
+                    except ValueError:
+                        # If the transition or out probability are 0, then a 
+                        # math domain error raises, due to the fact that this 
+                        # case is not possible.
+                        continue
+                    # Now, self._pi[i+1] is updated if necessary.
+                    if ((not c_tags in self._pi[i+1].keys())
+                        or (c_tags in self._pi[i+1].keys() 
+                            and self._pi[i+1][c_tags][0] < pos_max)):
+                        # If c_tags is not in self._pi[i+1].keys(), or if it 
+                        # exists but the current value is less than pos_max,
+                        # then pos_max is its maximum probability so far (the
+                        # sequence of tags in this case is tags_so_far + [t]).
+                        self._pi[i+1][c_tags] = (pos_max, tags_so_far + [t])
 
         # Now that the DP algorithm is done, we must check for the most 
         # probable tagging sequence registered.
@@ -185,7 +196,7 @@ class ViterbiTagger:
         best_log_prob = float('-inf')
         for info in self._pi[len(sent)].values():
             (log_probability, tagging_sequence) = info
-            if (result == [] or probability > best_log_prob):
+            if (result == [] or log_probability > best_log_prob):
                 result = tagging_sequence
                 best_log_prob = log_probability
 
