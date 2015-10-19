@@ -22,7 +22,7 @@ class HMM:
         """
 
         return (self.__tagset)
- 
+
     def trans_prob(self, tag, prev_tags):
         """Probability of a tag.
  
@@ -36,7 +36,6 @@ class HMM:
         if (prev_tags in self.__trans.keys() 
             and tag in self.__trans[prev_tags].keys()):
                 ret = self.__trans[prev_tags][tag]
-
         return (ret)
  
     def out_prob(self, word, tag):
@@ -49,7 +48,6 @@ class HMM:
 
         if (tag in self.__out.keys() and word in self.__out[tag].keys()):
             ret = self.__out[tag][word]
-
         return (ret)
  
     def tag_prob(self, y):
@@ -95,14 +93,14 @@ class HMM:
  
         y -- tagging.
         """
-        ret = 1
+        ret = 0.0
         previous = ('<s>',) * (self._n - 1)
         y = tuple(y) + ('</s>', )
 
         for t in y:
             # Since we are computing the log probability, then we have to add and
             # not multiply the results.
-            ret += math.log(self.trans_prob(t, previous))
+            ret += math.log2(self.trans_prob(t, previous))
             previous = previous[1:] + (t,)
 
         return (ret)
@@ -117,12 +115,11 @@ class HMM:
         # The probability of a tagging, given a sentence and according to 
         # Collins notes, depends on the probability of a tag, given its 
         # context, and the probability of the word found, given that tag.
-        ret = self.tag_prob(y)
-
+        ret = self.tag_log_prob(y)
         for i in range(len(x)):
             # Since we are computing the log probability, then we have to add and
             # not multiply the results.
-            ret += math.log(self.out_prob(x[i], y[i]))
+            ret += math.log2(self.out_prob(x[i], y[i]))
 
         return (ret)
  
