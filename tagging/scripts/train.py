@@ -6,9 +6,10 @@ Usage:
 
 Options:
 	-m <model>    Model to use [default: base]:
-									base: Baseline (default).
-									mlhmm: Maximum likelihood hidden Markov model
-	-n <n>        Length of n-grams for the mlhmm model.
+								base: Baseline (default).
+								mlhmm: Maximum likelihood hidden Markov model
+								memm: Maximum Entropy Markov Model
+	-n <n>        Length of n-grams for the mlhmm or memm model.
 	-o <file>     Output model file.
 	-h --help     Show this screen.
 """
@@ -45,6 +46,14 @@ if __name__ == '__main__':
 	        	sys.exit(0)	
 			# addone option is left to default (i.e., True).
 			model = MLHMM(opts['-n'], sents)
+		elif (opts['-m'] is 'memm')::
+			if (opts['-n'] is None):
+				print("Missing -n parameter for the memm model creation.")
+				print("Invalid model.")
+	        	parser.print_help()
+	        	sys.exit(0)	
+			# addone option is left to default (i.e., True).
+			model = MEMM(opts['-n'], sents)
 		else:
 			print("Invalid model.")
 	        parser.print_help()

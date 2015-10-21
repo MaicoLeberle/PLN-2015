@@ -89,4 +89,4 @@ class PrevWord(Feature):
 		else:
 			# Return the result of applying self.__f to a new history with the 
 			# same sent, same prev_tags, and changed i (i is now (i - 1)).
-			return (self.__f(History(h.sent, h.prev_tags, h.i - 1)))
+			return (str(self.__f(History(h.sent, h.prev_tags, h.i - 1))))

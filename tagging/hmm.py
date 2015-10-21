@@ -262,22 +262,14 @@ class MLHMM:
 		for prev_tags in list(self.__counts.keys()):
 			if (len(prev_tags) is self._n):
 				if (not self.__addone):
-					# print("prev_tags: " + str(prev_tags))
 					self.__q[prev_tags] = self.__counts[prev_tags]
 					if (self.__q[prev_tags] is not 0):
 						# This means self.__counts[prev_tags[1:]] is not 0.
 						self.__q[prev_tags] /= self.__counts[prev_tags[:-1]]
-					# print("\t\tself.__q[" + str(prev_tags) + "] : " + str(self.__q[prev_tags]))
-					# print("\t\t\tself.__counts[" + str(prev_tags) + "] : " + str(self.__counts[prev_tags]))
-					# print("\t\t\tself.__counts[" + str(prev_tags[:-1]) + "] : " + str(self.__counts[prev_tags[:-1]]))
 				else:
 					self.__q[prev_tags] = (self.__counts[prev_tags] + 1)
 					self.__q[prev_tags] /= float(self.__counts[prev_tags[:-1]] 
 						+ len(self.__tags_voc))
-				# if (True):
-				# 	print(str(prev_tags) + ":")
-				# 	print("\tself.__counts[" + str(prev_tags) + "] = " + str(self.__counts[prev_tags]))
-				# 	print("\tself.__counts[" + str(prev_tags[:-1]) + "] = " + str(self.__counts[prev_tags[:-1]]))
 				
 		for tag in self.__tags_voc:
 			if (not tag in self.__e.keys()):
@@ -329,13 +321,6 @@ class MLHMM:
 		
 		# Note that self.__q[prev_tags + (tag,)] already considers addone 
 		# smoothing (or its absence) due to the way self.__q is computedself.
-		print("##############################################")
-		print("TRANS_PROB")
-		print("prev_tags -> " + str(prev_tags))
-		print("tag -> " + str(tag))
-		print("ngram -> " + str(tuple(reversed(prev_tags)) + (tag,)))
-		print("self.__q[prev_tags + (tag,)] -> " + str(self.__q[prev_tags + (tag,)]))
-		print("##############################################")
 		return (self.__q[tuple(reversed(prev_tags)) + (tag,)])
  
 	def out_prob(self, word, tag):
@@ -364,7 +349,6 @@ class MLHMM:
 		previous = ('<s>',) * (self._n - 1)
 		y = tuple(y) + ('</s>', )
 
-		# print("\t\t\ty -> " + str(y))
 		for t in y:
 			ret *= self.trans_prob(t, previous)
 			if (self._n != 1):
@@ -383,7 +367,6 @@ class MLHMM:
 		assert (len(x) == len(y))
 
 		ret = self.tag_prob(y)
-		# print("RET: " + str(ret))
 
 		for i in range(len(x)):
 			ret *= self.out_prob(x[i], y[i])
