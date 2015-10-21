@@ -56,12 +56,12 @@ if __name__ == '__main__':
 	first_10 = sorted(tags_dic.items(), key=lambda x: (-x[1], x[0]))[:10]
 	for (t, appear) in first_10:
 		print("* \"" + str(t) + "\" appears " + str(appear) + " times " 
-			" in the corpus (" + str(appear / float(tokens_number)) + "%).")
+			" in the corpus (" + str(appear * 100 / float(tokens_number)) + "%).")
 		print("\tMost frequent words associated to this tag are:")
-		first_5 = sorted(tags[tag].items(), key=lambda x: (-x[1], x[0]))[:5]
+		first_5 = sorted(tags[t].items(), key=lambda x: (-x[1], x[0]))[:5]
 		for (t2, appear2) in first_5:
 			print("\t\"" + str(t2) + "\" (" + str(appear2) + " times -" + \
-				str(appear2 / float(appear)) + "% of the tag-).")
+				str(appear2 * 100 / float(appear)) + "% of the tag-).")
 
 	# MISSING: Ambiguity levels of words.
 	amb_level = defaultdict(set)
@@ -73,11 +73,11 @@ if __name__ == '__main__':
 	for i in sorted_amb_level_indexes:
 		if (i is 1):
 			print("\t1 tag: " + str(len(amb_level[i])) + " words (" 
-				+ str(len(amb_level[i]) / float(len(words_dic))) + "%).")
+				+ str(len(amb_level[i]) * 100 / float(len(words_dic))) + "%).")
 		else:
 			print("\t" + str(i) + " tags: " + str(len(amb_level[i])) 
 				+ " words (" + str(len(amb_level[i]) / float(len(words_dic)))
 					+ "%).")
 		print("\tMost frequent words with this tag:")
-		for word in (sorted(amb_level[i], key=lambda x:words_dic[x])[:5]):
+		for word in (sorted(amb_level[i], key=lambda x:-words_dic[x])[:5]):
 			print("\t\t" + str(word))
