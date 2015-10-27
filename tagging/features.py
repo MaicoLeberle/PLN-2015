@@ -59,6 +59,7 @@ class NPrevTags(Feature):
  
 		n -- number of previous tags to consider.
 		"""
+		assert(n > 0)
 		self.__n = n
 
 	def _evaluate(self, h):
