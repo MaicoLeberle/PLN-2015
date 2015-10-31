@@ -2,12 +2,14 @@ from tagging.features import (History, word_lower, word_istitle, word_isupper,
 							  word_isdigit, prev_tags, NPrevTags, PrevWord)
 from featureforge.vectorizer import Vectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import LinearSVC
 from sklearn.pipeline import Pipeline
 
 
 class MEMM:
  
-	def __init__(self, n, tagged_sents):
+	def __init__(self, n, tagged_sents, classifier='LR'):
 		"""
 		n -- order of the model.
 		tagged_sents -- list of sentences, each one being a list of pairs.
@@ -21,11 +23,20 @@ class MEMM:
 			for (word, tag) in sent:
 				self.__voc.add(word)
 
+		if (classifier == 'LSVC'):
+			classif = LinearSVC()
+		elif (classifier == 'MNB'):
+			classif = MultinomialNB()
+		else:
+			classif = LogisticRegression()
+
 		vect_params = [word_lower, word_istitle, word_isupper, word_isdigit]
 		vect_params += [PrevWord(f) for f in vect_params]
 		vect_params += [NPrevTags(j) for j in range(1, self.__n)]
+
 		pipeline_params = [('vectorizer', Vectorizer(vect_params)),
-						   ('classifier', LogisticRegression())]
+						   ('classifier', classif)]
+						   
 		self.__pipeline = Pipeline(pipeline_params)
 		self.__pipeline.fit(self.sents_histories(tagged_sents),
 							self.sents_tags(tagged_sents))
