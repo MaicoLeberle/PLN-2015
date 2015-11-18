@@ -44,6 +44,7 @@ class CKYParser:
 				# Since grammar is binarised, we know that having an rhs of 
 				# length greater than 1 means it is made of 2 non-terminals.
 				rhs = rhs[0].symbol(), rhs[1].symbol()
+			lhs = lhs.symbol()
 			self.__productions[rhs][lhs] =  p.logprob()
 
  
@@ -57,15 +58,15 @@ class CKYParser:
 		# First, register a dictionary for every possible interval in sent. 
 		# This is performed for later registration of probabilities and 
 		# subtrees associated with productions.
-		for i in range(n):
-			for j in range(i, n):
+		for i in range(1, n + 1):
+			for j in range(i, n + 1):
 				self._pi[(i,j)] = dict()
 				self._bp[(i,j)] = dict()
 
 		# Next, the CKY algorithm per se.
 		# Base case of CKY algorithm.
-		for i in range(len(sent)):
-			for (nterm, logprob) in self.__productions[(sent[i],)].items():
+		for i in range(1, n + 1):
+			for (nterm, logprob) in self.__productions[(sent[i - 1],)].items():
 				# For every word in sent (more precisely, for every interval 
 				# of length 1), register a dictionary consisting of 
 				# non-terminals (as keys) that derive in such word, and the 
@@ -73,18 +74,16 @@ class CKYParser:
 				self._pi[(i, i)][nterm] = logprob
 				# Also, register the subtree related to such non-terminal and 
 				# word.
-				self._bp[(i, i)][nterm] = Tree(nterm, [sent[i]])
+				self._bp[(i, i)][nterm] = Tree(nterm, [sent[i - 1]])
 		# Recursive case.
 		for l in range(1, n):
 			# l determines the length of the interval. It is not 0 because
 			# intervals that consist of a single word have already been
 			# considered in the base case.
-			for i in range(1, n - l):
+			for i in range(1, (n + 1) - l):
 				# i is the left-hand end of the range, and j is the right-hand
 				# end of the range.
 				j = i + l
-				self._pi[(i, j)] = dict()
-				self._bp[(i, j)] = dict()
 				for s in range(i, j):
 					# s is the breaking point of the subsentence of length l 
 					# that is being considered.
@@ -112,10 +111,10 @@ class CKYParser:
 										self._bp[(i, j)][nterm] = aux
 
 		s = self.__grammar.start().symbol()
-		if (s in self._pi[(0, n - 1)].keys()):
+		if (s in self._pi[(1, n)].keys()):
 			# A parsing starting from s was found; return its probability
 			# and the parsing itself.
-			return ((self._pi[(0, n - 1)][s], self._bp[0, n - 1][s]))
+			return ((self._pi[(1, n)][s], self._bp[1, n][s]))
 		else:
 			# If no parsing starting from s was found, return the minimum 
 			# possible log probability, and None as the parsing.
