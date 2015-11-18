@@ -82,7 +82,7 @@ if __name__ == '__main__':
         # unlabeled_hits is the number of elements that were correctly parsed 
         # with the model. & is the symbol for intersection between sets.
         unlabeled_hits += len(unlabeled_gold_spans & unlabeled_model_spans)
-        unlabeled_total_gold += len(unlabelded_gold_spans)
+        unlabeled_total_gold += len(unlabeled_gold_spans)
         unlabeled_total_model += len(unlabeled_model_spans)
 
         # compute labeled partial results
