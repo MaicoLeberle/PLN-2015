@@ -213,59 +213,6 @@ class ViterbiTagger:
 		return (result)
 
 
-
-	# def tag(self, sent):
-	# 	"""Returns the most probable tagging for a sentence.
-
-	# 	sent -- the sentence.
-	# 	"""
-	# 	m = len(sent)
-	# 	hmm = self.__hmm
-	# 	n = hmm._n
-	# 	tagset = hmm.tagset()
-
-	# 	pi = self._pi
-	# 	pi[0] = {
-	# 		('<s>',) * (n - 1): (0.0, [])
-	# 	}
-
-	# 	for i, w in zip(range(1, m + 1), sent):
-	# 		pi[i] = {}
-
-	# 		# iterate over tags that can follow with out_prob > 0.0
-	# 		tag_out_probs = [(t, hmm.out_prob(w, t)) for t in tagset]
-	# 		# print("len(tag_out_probs if p > 0): " + str(len([(t, p) for t, p in tag_out_probs if p > 0.0])))
-	# 		# if (len([(t, p) for t, p in tag_out_probs if p > 0.0]) == 0):
-	# 			# print("sent: " + str(sent))
-	# 			# print("sent[i]: " + str(sent[i]))
-	# 		for t, out_p in [(t, p) for t, p in tag_out_probs if p > 0.0]:
-	# 			# iterate over non-zeros in the previous column
-	# 			for prev, (lp, tag_sent) in pi[i - 1].items():
-	# 				trans_p = hmm.trans_prob(t, prev)
-	# 				if trans_p > 0.0:
-	# 					new_prev = (prev + (t,))[1:]
-	# 					new_lp = lp + math.log2(out_p) + math.log2(trans_p)
-	# 					# is it the max?
-	# 					if new_prev not in pi[i] or new_lp > pi[i][new_prev][0]:
-	# 						# print("Updating (" + str(i) + ")")
-	# 						# XXX: what if equal?
-	# 						pi[i][new_prev] = (new_lp, tag_sent + [t])
-
-	# 	# last step: generate STOP
-	# 	max_lp = float('-inf')
-	# 	result = None
-	# 	# print("AFUERA")
-	# 	for prev, (lp, tag_sent) in pi[m].items():
-	# 		# print("ADENTRO (" + str(prev) + ")")
-	# 		p = hmm.trans_prob('</s>', prev)
-	# 		if p > 0.0:
-	# 			new_lp = lp + math.log2(p)
-	# 			if new_lp > max_lp:
-	# 				max_lp = new_lp
-	# 				result = tag_sent
-
-	# 	return result
-
 class MLHMM:
  
 	def __init__(self, n, tagged_sents, addone=True):
