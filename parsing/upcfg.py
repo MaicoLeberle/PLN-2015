@@ -26,7 +26,7 @@ class UPCFG:
     """Unlexicalized PCFG.
     """
  
-    def __init__(self, parsed_sents, start='sentence'):
+    def __init__(self, parsed_sents, start='sentence', horzMarkov=None):
         """
         parsed_sents -- list of training trees.
         """
@@ -38,7 +38,7 @@ class UPCFG:
             temp_tree = unlexicalize(tree.copy(deep=True))
             # Second, make sure the tree is in CNF. This is because CKYParser 
             # only performs on binarised NLTK PCFGs.
-            temp_tree.chomsky_normal_form()
+            temp_tree.chomsky_normal_form(horzMarkov=horzMarkov)
             # chomsky_normal_form only binarises and unarises a tree. We also
             # need to eliminate unary productions, due to the way 
             # CKYParser.parse is implemented (CKYParser._pi.keys() is a list of
