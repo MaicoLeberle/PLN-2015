@@ -54,8 +54,7 @@ if __name__ == '__main__':
         parsed_sents[:int(opts['-n'])]
 
     print('Parsing...')
-    hits, total_gold, total_model = 0, 0, 0
-    unlabeled_hits, unlabeled_total_gold, unlabeled_total_model = 0, 0, 0
+    hits, total_gold, total_model, unlabeled_hits = 0, 0, 0, 0
     n = len(parsed_sents)
     format_str = '{:3.1f}% ({}/{}) (P={:2.2f}%, R={:2.2f}%, F1={:2.2f}%)'
     progress(format_str.format(0.0, 0, n, 0.0, 0.0, 0.0))
@@ -82,8 +81,6 @@ if __name__ == '__main__':
         # unlabeled_hits is the number of elements that were correctly parsed 
         # with the model. & is the symbol for intersection between sets.
         unlabeled_hits += len(unlabeled_gold_spans & unlabeled_model_spans)
-        unlabeled_total_gold += len(unlabeled_gold_spans)
-        unlabeled_total_model += len(unlabeled_model_spans)
 
         # compute labeled partial results
         prec = float(hits) / total_model * 100
@@ -94,8 +91,8 @@ if __name__ == '__main__':
 
         # compute unlabeled partial results
 
-        unlabeled_prec = (unlabeled_hits / unlabeled_total_model) * 100
-        unlabeled_rec = (unlabeled_hits / unlabeled_total_gold) * 100
+        unlabeled_prec = (unlabeled_hits / total_model) * 100
+        unlabeled_rec = (unlabeled_hits / total_gold) * 100
         unlabeled_f1 = 0.0
         if (unlabeled_prec + unlabeled_rec != 0):
             unlabeled_f1 = 2 * unlabeled_prec * unlabeled_rec / (unlabeled_prec + unlabeled_rec)
