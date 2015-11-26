@@ -88,13 +88,17 @@ if __name__ == '__main__':
         # compute labeled partial results
         prec = float(hits) / total_model * 100
         rec = float(hits) / total_gold * 100
-        f1 = 2 * prec * rec / (prec + rec)
+        f1 = 0.0
+        if (prec + rec != 0):
+            f1 = 2 * prec * rec / (prec + rec)
 
         # compute unlabeled partial results
 
         unlabeled_prec = (unlabeled_hits / unlabeled_total_model) * 100
         unlabeled_rec = (unlabeled_hits / unlabeled_total_gold) * 100
-        unlabeled_f1 = 2 * unlabeled_prec * unlabeled_rec / (unlabeled_prec + unlabeled_rec)
+        unlabeled_f1 = 0.0
+        if (unlabeled_prec + unlabeled_rec != 0):
+            unlabeled_f1 = 2 * unlabeled_prec * unlabeled_rec / (unlabeled_prec + unlabeled_rec)
 
         progress(format_str.format(float(i+1) * 100 / n, i+1, n, prec, rec, f1))
         progress(format_str.format(float(i+1) * 100 / n, i+1, n, unlabeled_prec, unlabeled_rec, unlabeled_f1))
