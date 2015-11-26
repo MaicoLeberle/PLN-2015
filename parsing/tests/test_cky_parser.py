@@ -182,7 +182,7 @@ class TestCKYParser(TestCase):
             (5, 5): {'Det': log2(0.3)},
             (6, 6): {'Noun': log2(0.4)},
             (7, 7): {'Prep': log2(0.2)},
-            (8, 8): {'Det': log2(0.3)},
+            (8, 8): {'Det': log2(0.7)},
             (9, 9): {'Noun': log2(0.3)},
 
             (1, 2): {'NP': log2(1.0 * 0.7 * 0.3)},
@@ -192,19 +192,23 @@ class TestCKYParser(TestCase):
             (5, 6): {'NP': log2(1.0 * 0.3 * 0.4)},
             (6, 7): {},
             (7, 8): {},
-            (8, 9): {'NP': log2(1.0 * 0.3 * 0.3)},
+            (8, 9): {'NP': log2(1.0 * 0.7 * 0.3)},
 
             (1, 3): {},
             (2, 4): {},
             (3, 5): {},
-            (4, 6): {'PP': log2(0.4) + log2(0.8) + log2(1.0 * 0.3 * 0.4)},
+            (4, 6): {'PP': log2(0.4 * 0.8 * 1.0 * 0.3 * 0.4)},
             (5, 7): {},
             (6, 8): {},
-            (7, 9): {'PP': log2(0.4) + log2(0.2) + log2(1.0 * 0.3 * 0.3)},
+            (7, 9): {'PP': log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3)},
 
             (1, 4): {},
             (2, 5): {},
-            (3, 6): {},
+            (3, 6): {'VP': 
+                      log2(0.6) # VP -> Verb PP [0.6]
+                    + log2(1.0) # Left part
+                    + log2(0.4 * 0.8 * 1.0 * 0.3 * 0.4) # Right part
+                    },
             (4, 7): {},
             (5, 8): {},
             (6, 9): {},
@@ -216,36 +220,56 @@ class TestCKYParser(TestCase):
             (5, 9): {'NPPP': 
                       log2(1.0) # NPPP -> NP PP [1.0]
                     + (log2(1.0 * 0.3 * 0.4)) # Left part
-                    + (log2(0.4) + log2(0.2) + log2(1.0 * 0.3 * 0.3)) # Right part
+                    + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3)) # Right part
                     },
 
-            (1, 6): {},
+            # Notice that the current grammar allows derivation from S to cover
+            #  interval (1, 6) with parsing tree 
+            #   (S  (NP (Det el) 
+            #           (Noun periodista)
+            #       )
+            #       (VP (Verb habló)
+            #           (PP (Prep   a)
+            #               (NP (Det la)
+            #                   (Noun persona)
+            #               )
+            #           )
+            #       )
+            #   )
+            (1, 6): {'S':
+                      log2(1.0) # S -> NP VP [1.0]
+                    + log2(1.0 * 0.7 * 0.3) # Left part
+                    + (log2(0.6) # Right part
+                        + log2(1.0) 
+                        + log2(0.4 * 0.8 * 1.0 * 0.3 * 0.4))
+                    },
             (2, 7): {}, 
             (3, 8): {},
             (4, 9): { 'PPS': 
                        log2(1.0) # PPS -> PP PP [1.0]
-                     + (log2(0.4) + log2(0.8) + log2(1.0 * 0.3 * 0.4)) # Left part
-                     + (log2(0.4) + log2(0.2) + log2(1.0 * 0.3 * 0.3)) # Right part
+                     + (log2(0.4 * 0.8 * 1.0 * 0.3 * 0.4)) # Left part
+                     + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3)) # Right part
                     , 'PP':
                        log2(0.6) # PP -> Prep NPPP [0.6]
                      + (log2(0.8)) # Left part
-                     + (log2(1.0)
+                     + (log2(1.0) # Right part
                         + (log2(1.0 * 0.3 * 0.4))
-                        + (log2(0.4) + log2(0.2) + log2(1.0 * 0.3 * 0.3))) # Right part
+                        + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3)))
                     },
 
             (1, 7): {},
             (2, 8): {},
             # There are two possible parsings for this interval, both starting 
-            # with VP. Hence, the most probable one, VP -> Verb PP, was chosen.
+            # with VP: VP -> Verb PP and VP -> Verb PPS. Hence, the most 
+            # probable one, VP -> Verb PP, was chosen.
             (3, 9): {'VP':
                       log2(0.6) # VP -> Verb PP [0.6]
                     + log2(1.0) # Left part
-                    + (log2(0.6)
+                    + (log2(0.6) # Right part
                         + (log2(0.8))
                         + (log2(1.0)
                            + (log2(1.0 * 0.3 * 0.4))
-                           + (log2(0.4) + log2(0.2) + log2(1.0 * 0.3 * 0.3)))) # Right part
+                           + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3))))
                     },
 
             (1, 8): {},
@@ -254,13 +278,13 @@ class TestCKYParser(TestCase):
             (1, 9): {'S':
                       log2(1.0) # S -> NP VP [1.0]
                     + log2(1.0 * 0.7 * 0.3) # Left part
-                    + (log2(0.6)
+                    + (log2(0.6) # Right part
                         + log2(1.0)
                         + (log2(0.6)
                             + (log2(0.8))
                             + (log2(1.0)
                                + (log2(1.0 * 0.3 * 0.4))
-                               + (log2(0.4) + log2(0.2) + log2(1.0 * 0.3 * 0.3))))) # Right part
+                               + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3))))) 
                     },
         }
         self.assertEqualPi(parser._pi, pi)
@@ -297,7 +321,7 @@ class TestCKYParser(TestCase):
 
             (1, 4): {},
             (2, 5): {},
-            (3, 6): {},
+            (3, 6): {'VP': Tree.fromstring("(VP (Verb habló) (PP (Prep a) (NP (Det la) (Noun persona))))")},
             (4, 7): {},
             (5, 8): {},
             (6, 9): {},
@@ -308,7 +332,7 @@ class TestCKYParser(TestCase):
             (4, 8): {},
             (5, 9): {'NPPP': Tree.fromstring("(NPPP (NP  (Det la) (Noun persona)) (PP (Prep con) (NP (Det el) (Noun micrófono))))")},
 
-            (1, 6): {},
+            (1, 6): {'S': Tree.fromstring("(S (NP (Det el) (Noun periodista)) (VP (Verb habló) (PP (Prep a) (NP (Det la) (Noun persona)))))")},
             (2, 7): {}, 
             (3, 8): {},
             (4, 9): { 'PPS': Tree.fromstring("(PPS (PP (Prep a) (NP (Det la) (Noun persona) )) (PP (Prep con) (NP (Det el) (Noun micrófono))))")
@@ -351,7 +375,7 @@ class TestCKYParser(TestCase):
 
         # check log probability
         lp2 = log2(1.0 * 1.0 * 0.7 * 0.3 * 0.6 * 1.0 * 0.6 * 0.8 * 1.0 \
-                        * 1.0 * 0.3 * 0.4 * 0.4 * 0.2 * 1.0 * 0.3 * 0.3)
+                        * 1.0 * 0.3 * 0.4 * 0.4 * 0.2 * 1.0 * 0.7 * 0.3)
         self.assertAlmostEqual(lp, lp2)
 
     def assertEqualPi(self, pi1, pi2):
@@ -363,4 +387,9 @@ class TestCKYParser(TestCase):
             for k2 in d1.keys():
                 prob1 = d1[k2]
                 prob2 = d2[k2]
-                self.assertAlmostEqual(prob1, prob2)
+                try:
+                    self.assertAlmostEqual(prob1, prob2)
+                except:
+                    print("k -> " + str(k))
+                    print("k2 -> " + str(k2))
+                    raise
