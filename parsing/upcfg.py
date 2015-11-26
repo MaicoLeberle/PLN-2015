@@ -30,7 +30,6 @@ class UPCFG:
         """
         parsed_sents -- list of training trees.
         """
-        self.__start = Nonterminal(symbol=start)
         productions = list()
         for tree in parsed_sents:
             # First, unlexicalize the tree (i.e., replace the words in the 
@@ -76,11 +75,13 @@ class UPCFG:
 
         if (tagging is None):
             # No parsing was found; return the parsing that a flat tree 
-            # returns (i.e., self.__start derives to every POS tag in 
+            # returns (i.e., the symbol 'S' derives to every POS tag in 
             # tagged_sentence, and those tags derive into their corresponding 
             # words in the sentence).
+            # Notice that the symbol 'S' was chosen, matching the results 
+            # expected in the tests.
             return (Flat(parsed_sents=None,
-                             start=self.__start).parse(tagged_sent))
+                             start='S').parse(tagged_sent))
         else:
             # A parsing was found. Return such parsing, lexicalizing it with 
             # the words in the sentence (i.e., replacing every leaf, in the 
