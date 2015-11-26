@@ -82,7 +82,12 @@ class TestUPCFG(TestCase):
         tree = model.parse(tagged_sent)
 
         tree2 = Tree.fromstring("(S (Noun gato) (Det el) (Verb come) (Noun pescado) (Adj crudo))")
-        self.assertEqual(tree, tree2)
+        try:
+            self.assertEqual(tree, tree2)
+        except:
+            print("tree -> " + str(tree))
+            print("\n\n\n\ntre2 -> " + str(tree2))
+            raise
 
     def test_horz_markov_None(self):
         t = Tree.fromstring("(NP (Det el) (Noun gato) (Adj negro))")
