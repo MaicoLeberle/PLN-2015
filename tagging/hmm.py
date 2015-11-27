@@ -222,15 +222,14 @@ class MLHMM:
 		addone -- whether to use addone smoothing (default: True).
 		"""
 		self._n = n
-		self.__tagged_sents = tagged_sents
 		# self.__words_voc and self.__tags_voc are the set of words and tags 
 		# seen in training data, respectively. They will be needed mainly for 
-		# the addone smoothing (and the self.unknown method).
+		# the addone smoothing (and the unknown method).
 		self.__words_voc = set()
 		self.__tags_voc = set()
 		# self.__counts_n, self.__counts_n_1 and self.__counts_1 will have the
 		# number of appearances in the training data, related to n-grams, 
-		# (n-1)-grams and unigrams of tags, respectively
+		# (n-1)-grams and unigrams of tags, respectively.
 		self.__counts_n = defaultdict(int)
 		self.__counts_n_1 = defaultdict(int)
 		self.__counts_1 = defaultdict(int)
@@ -247,9 +246,9 @@ class MLHMM:
 		# Store every piece of information that will be needed later.
 		for sent in tagged_sents:
 			for (word, tag) in sent:
-				if (self._n > 2):
-					# Update the number of occurrences of the unigram tag.
-					self.__counts_1[(tag,)] += 1
+				# if (self._n > 2):
+				# 	# Update the number of occurrences of the unigram tag.
+				self.__counts_1[(tag,)] += 1
 				# Update counts for this (tag, word) occurrence.
 				if (not tag in self.__counts_words.keys()):
 					self.__counts_words[tag] = defaultdict(int)
@@ -271,22 +270,22 @@ class MLHMM:
 		# that will be needed later are computed only once now, and stored.
 		for prev_tags in list(self.__counts_n.keys()):
 			if (addone):
-				self.__q[prev_tags] = (self.__counts_n[prev_tags] + 1)
+				self.__q[prev_tags] = float(self.__counts_n[prev_tags] + 1)
 				self.__q[prev_tags] /= float(self.__counts_n_1[prev_tags[:-1]] 
 					+ len(self.__tags_voc))
 			else:
-				assert(False)
-				self.__q[prev_tags] = self.__counts_n[prev_tags]
+				self.__q[prev_tags] = float(self.__counts_n[prev_tags])
 				if (prev_tags[:-1] in self.__counts_n_1.keys()):
 					self.__q[prev_tags] /= self.__counts_n_1[prev_tags[:-1]]
-				
+		
 		for tag in self.__tags_voc:
 			if (not tag in self.__e.keys()):
 				self.__e[tag] = defaultdict(float)
 			for word in self.__words_voc:
-				self.__e[tag][word] = self.__counts_words[tag][word]
+				self.__e[tag][word] = float(self.__counts_words[tag][word])
 				if (self.__counts_1[(tag,)] != 0):
 					self.__e[tag][word] /= self.__counts_1[(tag,)]
+
  
 	def tcount(self, tokens):
 		"""Count for an n-gram or (n-1)-gram of tags.
@@ -345,12 +344,10 @@ class MLHMM:
 		ret = 0.0
 
 		if (tag in self.__e.keys()):
-			# Note that self.__e[tag][word] already considers addone smoothing
-			# (or its absence) due to the way self.__e is computed.
 			if (word in self.__e[tag].keys()):
 				ret = self.__e[tag][word]
 			else:
-				ret = 1 / len(self.__words_voc)
+				ret = 1.0 / len(self.__words_voc)
 
 		return (ret)
  
@@ -361,14 +358,14 @@ class MLHMM:
  
 		y -- tagging.
 		"""
-		ret = 1
+		ret = 1.0
 		previous = ('<s>',) * (self._n - 1)
 		y = tuple(y) + ('</s>', )
 
 		for t in y:
 			ret *= self.trans_prob(t, previous)
 			if (self._n != 1):
-				previous = previous[:-1] + (t,)
+				previous = previous[1:] + (t,)
 
 		return (ret)
  
