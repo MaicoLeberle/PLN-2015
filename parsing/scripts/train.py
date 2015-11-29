@@ -40,8 +40,8 @@ if __name__ == '__main__':
         model = models[opts['-m']](corpus.parsed_sents())
     else:
         if (opts['-n'] is not None):
-            model = UPCFG(parsed_sents=corpus.parsed_sents()
-                        , horzMarkov=int(opts['-n']))
+            model = UPCFG(parsed_sents=corpus.parsed_sents(),
+                          horzMarkov=int(opts['-n']))
         else:
             model = UPCFG(parsed_sents=corpus.parsed_sents())
 

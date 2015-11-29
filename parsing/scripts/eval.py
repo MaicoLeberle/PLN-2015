@@ -47,9 +47,9 @@ if __name__ == '__main__':
     corpus = SimpleAncoraCorpusReader('ancora/ancora-2.0/', files)
     # Every element in corpus.parsed_sents() retrieves its sentence, tokenized,
     #  through the method leaves.
-    parsed_sents = [sent 
-                        for sent in list(corpus.parsed_sents()) 
-                        if len(sent.leaves()) <= m]
+    parsed_sents = [sent
+                    for sent in list(corpus.parsed_sents())
+                    if len(sent.leaves()) <= m]
     if (opts['-n'] is not None):
         parsed_sents[:int(opts['-n'])]
 
@@ -73,12 +73,12 @@ if __name__ == '__main__':
 
         # compute unlabeled scores
 
-        # Every element in gold_spans is composed by (n, i, j), where n is the 
+        # Every element in gold_spans is composed by (n, i, j), where n is the
         # non-terminal, i is the beginning of the interval and j is the ending
         # of the interval.
         unlabeled_gold_spans = set([(x[1], x[2]) for x in gold_spans])
         unlabeled_model_spans = set([(x[1], x[2]) for x in model_spans])
-        # unlabeled_hits is the number of elements that were correctly parsed 
+        # unlabeled_hits is the number of elements that were correctly parsed
         # with the model. & is the symbol for intersection between sets.
         unlabeled_hits += len(unlabeled_gold_spans & unlabeled_model_spans)
 
@@ -95,10 +95,21 @@ if __name__ == '__main__':
         unlabeled_rec = (unlabeled_hits / total_gold) * 100
         unlabeled_f1 = 0.0
         if (unlabeled_prec + unlabeled_rec != 0):
-            unlabeled_f1 = 2 * unlabeled_prec * unlabeled_rec / (unlabeled_prec + unlabeled_rec)
+            unlabeled_f1 = 2 * unlabeled_prec * unlabeled_rec / \
+                (unlabeled_prec + unlabeled_rec)
 
-        progress(format_str.format(float(i+1) * 100 / n, i+1, n, prec, rec, f1))
-        progress(format_str.format(float(i+1) * 100 / n, i+1, n, unlabeled_prec, unlabeled_rec, unlabeled_f1))
+        progress(format_str.format(float(i+1) * 100 / n,
+                                   i+1,
+                                   n,
+                                   prec,
+                                   rec,
+                                   f1))
+        progress(format_str.format(float(i+1) * 100 / n,
+                                   i+1,
+                                   n,
+                                   unlabeled_prec,
+                                   unlabeled_rec,
+                                   unlabeled_f1))
 
     print('')
     print('Parsed {} sentences'.format(n))

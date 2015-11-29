@@ -27,6 +27,7 @@ class RBranch:
         t.chomsky_normal_form(factor='right', horzMarkov=0)
         return t
 
+
 class LBranch:
 
     def __init__(self, parsed_sents, start='sentence'):
