@@ -3,6 +3,16 @@ from collections import defaultdict
 from math import log
 from random import uniform
 
+from datetime import datetime
+import sys
+
+def progress(msg, width=None):
+    """Ouput the progress of something on the same line."""
+    if not width:
+        width = len(msg)
+    print('\b' * width + msg, end='')
+    sys.stdout.flush()
+
 class EvaluatingClass(object):
     def __init__(self):
         pass
@@ -13,7 +23,8 @@ class EvaluatingClass(object):
             test_set -- the test corpus.
         """
         res = 0.0
-        for sent in test_set:
+        for i, sent in enumerate(test_set):
+            progress('{:3.1f}%'.format(float(i) * 100 / float(len(test_set))))
             res += self.sent_log_prob(sent)
         return res
 
@@ -545,7 +556,8 @@ class BackOffNGram(EvaluatingClass):
             # After this, self.beta will be set to the value in 
             # [0.1, ..., 0.9, 1.0] that maximizes the log-likelihood of the 
             # development corpus.
-            self.__compute_beta(held_out)
+            # self.__compute_beta(held_out)
+            self.beta = 1.0
 
     def count(self, tokens):
         """ Count for a k-gram with 0 <= k < n.
@@ -689,11 +701,13 @@ class BackOffNGram(EvaluatingClass):
             (a.k.a. held-out data).
         """
         self.beta = best_beta = 0.1 
+        print("beta -> " + str(self.beta) + "(" + str(datetime.now()) + ").")
         self.__clear_memo()
         best_log = self.__compute_log_likelihood()
 
         for beta in [(x+1) / 10.0 for x in range(1,10)]:
             self.beta = beta
+            print("beta -> " + str(beta) + "(" + str(datetime.now()) + ").")
             self.__clear_memo()
             current_log = self.__compute_log_likelihood()
             if current_log > best_log:
@@ -701,16 +715,18 @@ class BackOffNGram(EvaluatingClass):
                 best_beta = beta
 
         self.beta = best_beta
+        print("self.beta -> " + str(self.beta))
 
     def __compute_log_likelihood(self):
         """ Change self.gamma and compute log-likelihood.
             Restor self.gamma to its previous value, and return the 
             log-likelihood value obtained.
         """
-        print("__compute_log_likelihood")
+        print("\t(__compute_log_likelihood)")
         log_likelihood = 0.0
 
         for key, value in self.counts_prime.items():
+            # print("key -> " + str(key) + ", value -> " + str(value))
             try:
                 log_likelihood += value * log (self.cond_prob(token=key[-1], prev_tokens=key[:-1]))
             except ValueError:

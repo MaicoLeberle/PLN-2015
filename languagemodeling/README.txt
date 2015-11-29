@@ -171,4 +171,16 @@ ejercicio anterior. Es preciso realizar memoization a medida que se van
 computando las probabilidades condicionales (self.cond_prob), para evitar 
 recomputarlas, lo cual es sumamente costoso. Dicha memoization se realiza en 
 self.__q_D, self.__A, self.__alpha y self.__denom. 
-Por último, cabe aclarar 
+
+Valores perplexity obtenidos con esta clase:
+
+  Valor de N   |   Perplexity  |
+--------------------------------
+       1       |     1513      |
+--------------------------------
+       2       |            |
+--------------------------------
+       3       |            |
+--------------------------------
+       4       |            |
+--------------------------------
