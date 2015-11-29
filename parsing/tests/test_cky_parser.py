@@ -49,9 +49,12 @@ class TestCKYParser(TestCase):
             (2, 5): {},
 
             (1, 5): {'S':
-                     log2(1.0) +  # rule S -> NP VP
-                     log2(0.6 * 1.0 * 0.9) +  # left part
-                     log2(1.0) + log2(1.0) + log2(0.4 * 0.1 * 1.0)},  # right part
+                     # rule S -> NP VP
+                     log2(1.0) +
+                     # left part
+                     log2(0.6 * 1.0 * 0.9) +
+                     # right part
+                     log2(1.0) + log2(1.0) + log2(0.4 * 0.1 * 1.0)},
         }
         self.assertEqualPi(parser._pi, pi)
 
@@ -131,20 +134,21 @@ class TestCKYParser(TestCase):
 
         parser = CKYParser(grammar)
 
-        lp, t = parser.parse('el periodista habló a la persona con el micrófono'.split())
+        lp, t = parser.parse('el periodista habló'
+                             ' a la persona con el micrófono'.split())
         # Notar que hay dos parsings posibles para esta oración:
         #
-        # (S  (NP (Det el) 
+        # (S  (NP (Det el)
         #         (Noun periodista)
         #     )
-        #     (VP (Verb habló) 
-        #         (PPS    (PP (Prep a) 
-        #                     (NP (Det la) 
+        #     (VP (Verb habló)
+        #         (PPS    (PP (Prep a)
+        #                     (NP (Det la)
         #                         (Noun persona)
         #                     )
-        #                 ) 
-        #                 (PP (Prep con) 
-        #                     (NP (Det el) 
+        #                 )
+        #                 (PP (Prep con)
+        #                     (NP (Det el)
         #                         (Noun micrófono)
         #                     )
         #                 )
@@ -168,11 +172,11 @@ class TestCKYParser(TestCase):
         #                         )
         #                     )
         #             )
-        #         )  
+        #         )
         #     )
         # )
 
-        # Check chart. pi will hold the most probable parsing, along with its 
+        # Check chart. pi will hold the most probable parsing, along with its
         # probability.
         pi = {
             (1, 1): {'Det': log2(0.7)},
@@ -204,11 +208,13 @@ class TestCKYParser(TestCase):
 
             (1, 4): {},
             (2, 5): {},
-            (3, 6): {'VP': 
-                      log2(0.6) # VP -> Verb PP [0.6]
-                    + log2(1.0) # Left part
-                    + log2(0.4 * 0.8 * 1.0 * 0.3 * 0.4) # Right part
-                    },
+            (3, 6): {'VP':
+                     # VP -> Verb PP [0.6]
+                     log2(0.6)
+                     # Left part
+                     + log2(1.0)
+                     # Right part
+                     + log2(0.4 * 0.8 * 1.0 * 0.3 * 0.4)},
             (4, 7): {},
             (5, 8): {},
             (6, 9): {},
@@ -217,15 +223,17 @@ class TestCKYParser(TestCase):
             (2, 6): {},
             (3, 7): {},
             (4, 8): {},
-            (5, 9): {'NPPP': 
-                      log2(1.0) # NPPP -> NP PP [1.0]
-                    + (log2(1.0 * 0.3 * 0.4)) # Left part
-                    + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3)) # Right part
-                    },
+            (5, 9): {'NPPP':
+                     # NPPP -> NP PP [1.0]
+                     log2(1.0)
+                     # Left part
+                     + (log2(1.0 * 0.3 * 0.4))
+                     # Right part
+                     + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3))},
 
             # Notice that the current grammar allows derivation from S to cover
-            #  interval (1, 6) with parsing tree 
-            #   (S  (NP (Det el) 
+            #  interval (1, 6) with parsing tree
+            #   (S  (NP (Det el)
             #           (Noun periodista)
             #       )
             #       (VP (Verb habló)
@@ -237,59 +245,70 @@ class TestCKYParser(TestCase):
             #       )
             #   )
             (1, 6): {'S':
-                      log2(1.0) # S -> NP VP [1.0]
-                    + log2(1.0 * 0.7 * 0.3) # Left part
-                    + (log2(0.6) # Right part
-                        + log2(1.0) 
-                        + log2(0.4 * 0.8 * 1.0 * 0.3 * 0.4))
-                    },
-            (2, 7): {}, 
+                     # S -> NP VP [1.0]
+                     log2(1.0)
+                     # Left part
+                     + log2(1.0 * 0.7 * 0.3)
+                     # Right part
+                     + (log2(0.6)
+                        + log2(1.0)
+                        + log2(0.4 * 0.8 * 1.0 * 0.3 * 0.4))},
+            (2, 7): {},
             (3, 8): {},
-            (4, 9): { 'PPS': 
-                       log2(1.0) # PPS -> PP PP [1.0]
-                     + (log2(0.4 * 0.8 * 1.0 * 0.3 * 0.4)) # Left part
-                     + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3)) # Right part
-                    , 'PP':
-                       log2(0.6) # PP -> Prep NPPP [0.6]
-                     + (log2(0.8)) # Left part
-                     + (log2(1.0) # Right part
+            (4, 9): {'PPS':
+                     # PPS -> PP PP [1.0]
+                     log2(1.0)
+                     # Left part
+                     + (log2(0.4 * 0.8 * 1.0 * 0.3 * 0.4))
+                     # Right part
+                     + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3)),
+                     'PP':
+                     # PP -> Prep NPPP [0.6]
+                     log2(0.6)
+                     # Left part
+                     + (log2(0.8))
+                     # Right part
+                     + (log2(1.0)
                         + (log2(1.0 * 0.3 * 0.4))
-                        + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3)))
-                    },
+                        + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3)))},
 
             (1, 7): {},
             (2, 8): {},
-            # There are two possible parsings for this interval, both starting 
-            # with VP: VP -> Verb PP and VP -> Verb PPS. Hence, the most 
+            # There are two possible parsings for this interval, both starting
+            # with VP: VP -> Verb PP and VP -> Verb PPS. Hence, the most
             # probable one, VP -> Verb PP, was chosen.
             (3, 9): {'VP':
-                      log2(0.6) # VP -> Verb PP [0.6]
-                    + log2(1.0) # Left part
-                    + (log2(0.6) # Right part
+                     # VP -> Verb PP [0.6]
+                     log2(0.6)
+                     # Left part
+                     + log2(1.0)
+                     # Right part
+                     + (log2(0.6)
                         + (log2(0.8))
                         + (log2(1.0)
                            + (log2(1.0 * 0.3 * 0.4))
-                           + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3))))
-                    },
+                           + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3))))},
 
             (1, 8): {},
             (2, 9): {},
 
             (1, 9): {'S':
-                      log2(1.0) # S -> NP VP [1.0]
-                    + log2(1.0 * 0.7 * 0.3) # Left part
-                    + (log2(0.6) # Right part
+                     # S -> NP VP [1.0]
+                     log2(1.0)
+                     # Left part
+                     + log2(1.0 * 0.7 * 0.3)
+                     # Right part
+                     + (log2(0.6)
                         + log2(1.0)
                         + (log2(0.6)
                             + (log2(0.8))
                             + (log2(1.0)
                                + (log2(1.0 * 0.3 * 0.4))
-                               + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3))))) 
-                    },
+                               + (log2(0.4 * 0.2 * 1.0 * 0.7 * 0.3)))))},
         }
         self.assertEqualPi(parser._pi, pi)
 
-        # Check partial results. bp will hold the most probable parsing for 
+        # Check partial results. bp will hold the most probable parsing for
         # each interval.
         bp = {
             (1, 1): {'Det': Tree.fromstring("(Det el)")},
@@ -314,14 +333,18 @@ class TestCKYParser(TestCase):
             (1, 3): {},
             (2, 4): {},
             (3, 5): {},
-            (4, 6): {'PP': Tree.fromstring("(PP (Prep a) (NP (Det la) (Noun persona)))")},
+            (4, 6): {'PP': Tree.fromstring("(PP (Prep a) "
+                                           "(NP (Det la) (Noun persona)))")},
             (5, 7): {},
             (6, 8): {},
-            (7, 9): {'PP': Tree.fromstring("(PP (Prep con) (NP (Det el) (Noun micrófono)))")},
+            (7, 9): {'PP': Tree.fromstring("(PP (Prep con) "
+                                           "(NP (Det el) (Noun micrófono)))")},
 
             (1, 4): {},
             (2, 5): {},
-            (3, 6): {'VP': Tree.fromstring("(VP (Verb habló) (PP (Prep a) (NP (Det la) (Noun persona))))")},
+            (3, 6): {'VP': Tree.fromstring("(VP (Verb habló) "
+                                           "(PP (Prep a) "
+                                           "(NP (Det la) (Noun persona))))")},
             (4, 7): {},
             (5, 8): {},
             (6, 9): {},
@@ -330,25 +353,58 @@ class TestCKYParser(TestCase):
             (2, 6): {},
             (3, 7): {},
             (4, 8): {},
-            (5, 9): {'NPPP': Tree.fromstring("(NPPP (NP  (Det la) (Noun persona)) (PP (Prep con) (NP (Det el) (Noun micrófono))))")},
+            (5, 9): {'NPPP': Tree.fromstring("(NPPP "
+                                             "(NP  (Det la) (Noun persona)) "
+                                             "(PP (Prep con) "
+                                             "(NP (Det el) "
+                                             "(Noun micrófono))))")},
 
-            (1, 6): {'S': Tree.fromstring("(S (NP (Det el) (Noun periodista)) (VP (Verb habló) (PP (Prep a) (NP (Det la) (Noun persona)))))")},
-            (2, 7): {}, 
+            (1, 6): {'S': Tree.fromstring("(S "
+                                          "(NP (Det el) "
+                                          "(Noun periodista)) "
+                                          "(VP (Verb habló) "
+                                          "(PP (Prep a) "
+                                          "(NP (Det la) (Noun persona)))))")},
+            (2, 7): {},
             (3, 8): {},
-            (4, 9): { 'PPS': Tree.fromstring("(PPS (PP (Prep a) (NP (Det la) (Noun persona) )) (PP (Prep con) (NP (Det el) (Noun micrófono))))")
-                    , 'PP': Tree.fromstring("(PP (Prep a) (NPPP (NP (Det la) (Noun persona)) (PP (Prep con) (NP (Det el) (Noun micrófono)))))") 
-                    },
+            (4, 9): {'PPS': Tree.fromstring("(PPS "
+                                            "(PP (Prep a) "
+                                            "(NP (Det la) "
+                                            "(Noun persona))) "
+                                            "(PP (Prep con) "
+                                            "(NP (Det el) "
+                                            "(Noun micrófono))))"),
+                     'PP': Tree.fromstring("(PP (Prep a) "
+                                           "(NPPP (NP (Det la) "
+                                           "(Noun persona)) "
+                                           "(PP (Prep con) "
+                                           "(NP (Det el) "
+                                           "(Noun micrófono)))))")},
 
             (1, 7): {},
             (2, 8): {},
-            # There are two possible parsings for this interval, both starting 
+            # There are two possible parsings for this interval, both starting
             # with VP. Hence, the most probable one, VP -> Verb PP, was chosen.
-            (3, 9): {'VP': Tree.fromstring("(VP (Verb habló) (PP (Prep a) (NPPP (NP (Det la) (Noun persona)) (PP (Prep con) (NP (Det el) (Noun micrófono))))))")},
+            (3, 9): {'VP': Tree.fromstring("(VP (Verb habló) "
+                                           "(PP (Prep a) "
+                                           "(NPPP (NP (Det la) "
+                                           "(Noun persona)) "
+                                           "(PP (Prep con) "
+                                           "(NP (Det el) "
+                                           "(Noun micrófono))))))")},
 
             (1, 8): {},
             (2, 9): {},
 
-            (1, 9): {'S': Tree.fromstring("(S (NP (Det el) (Noun periodista)) (VP (Verb habló) (PP (Prep a) (NPPP (NP (Det la) (Noun persona)) (PP (Prep con) (NP (Det el) (Noun micrófono)))))))")},
+            (1, 9): {'S': Tree.fromstring("(S (NP (Det el) "
+                                          "(Noun periodista)) "
+                                          "(VP (Verb habló) "
+                                          "(PP (Prep a) "
+                                          "(NPPP (NP (Det la) "
+                                          "(Noun persona)) "
+                                          "(PP (Prep con) "
+                                          "(NP (Det el) "
+                                          "(Noun micrófono)))))))")},
         }
         self.assertEqual(parser._bp, bp)
 
@@ -356,13 +412,13 @@ class TestCKYParser(TestCase):
         t2 = Tree.fromstring(
             """
                 (S  (NP (Det el) (Noun periodista))
-                    (VP (Verb habló) 
-                        (PP (Prep a) 
-                            (NPPP   (NP (Det la) 
+                    (VP (Verb habló)
+                        (PP (Prep a)
+                            (NPPP   (NP (Det la)
                                         (Noun persona)
-                                    ) 
-                                    (PP (Prep con) 
-                                        (NP (Det el) 
+                                    )
+                                    (PP (Prep con)
+                                        (NP (Det el)
                                             (Noun micrófono)
                                         )
                                     )
@@ -374,8 +430,8 @@ class TestCKYParser(TestCase):
         self.assertEqual(t, t2)
 
         # check log probability
-        lp2 = log2(1.0 * 1.0 * 0.7 * 0.3 * 0.6 * 1.0 * 0.6 * 0.8 * 1.0 \
-                        * 1.0 * 0.3 * 0.4 * 0.4 * 0.2 * 1.0 * 0.7 * 0.3)
+        lp2 = log2(1.0 * 1.0 * 0.7 * 0.3 * 0.6 * 1.0 * 0.6 * 0.8 * 1.0 *
+                   1.0 * 0.3 * 0.4 * 0.4 * 0.2 * 1.0 * 0.7 * 0.3)
         self.assertAlmostEqual(lp, lp2)
 
     def assertEqualPi(self, pi1, pi2):
