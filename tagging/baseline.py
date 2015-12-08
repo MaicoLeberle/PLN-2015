@@ -30,7 +30,7 @@ class BaselineTagger:
         # returned from self.tag_word(...). Store the results in self.words.
         self.words = dict()
         for w in words.keys():
-            self.words[w] = sorted(words[w].items(), key=lambda x: x[1])[0][0]
+            self.words[w] = sorted(words[w].items(), key=lambda x: -x[1])[0][0]
 
         # Store most seen tag in the corpus.
         cur_count = 0
@@ -59,8 +59,8 @@ class BaselineTagger:
         w -- the word.
         """
         if (w in self.words.keys()):
-            # self.words[w] contains the most seen tag for such a word.
-            return (self.words[w])
+            # self.words[w] contains the most seen tags for such a word.
+            return ((self.words[w]))
         else:
             # Assignment specifies the following is what should be returned
             # in such a case.

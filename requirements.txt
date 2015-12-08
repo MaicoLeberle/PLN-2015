@@ -4,4 +4,8 @@ docopt
 nltk
 scikit-learn
 featureforge
-# -e .  # install our code in editing mode
+matplotlib
+numpy
+# The following package was needed in my PC, when using matplotlib.pyplot.
+cairocffi
+-e .  # install our code in editing mode
