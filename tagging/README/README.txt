@@ -89,6 +89,9 @@ Resultados del etiquetador Baseline:
 	* Accuracy unknown: 31.80%
 	* Tiempo de evaluación: 0m7.226s
 
+Se incluye, para este ejercicio, el mapa de calor que representa la matriz de 
+confusión del baseline en tagging/README/baseline.png.
+
 -------------------------------------------------------------------------------
 EJERCICIO 4
 -------------------------------------------------------------------------------
@@ -146,6 +149,11 @@ N = 4:
 		real	29m25.166s
 		user	28m57.416s
 		sys	0m3.584s
+
+Se incluyen, para este ejercicio, los mapas de calor que representan la 
+matrices de confusión del MLHMM (para distintos valores de N) en 
+tagging/README/mlhmm.n-*.png.
+
 
 -------------------------------------------------------------------------------
 EJERCICIO 6
@@ -292,3 +300,7 @@ N = 4, clasificador = naive_bayes.MultinomialNB:
 	Accuracy: 68.20%
 	Accuracy of known words: 9.935961682509205%.
 	Accuracy of unknown words: 90.0640383174908%.
+
+Se incluyen, para este ejercicio, los mapas de calor que representan la 
+matrices de confusión del MEMM (para distintos valores de N, y distintos
+clasificadores) en tagging/README/memm.n-*.c-*.png.

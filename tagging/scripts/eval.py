@@ -48,7 +48,7 @@ if __name__ == '__main__':
     total_known, total_unknown = 0, 0
 
     confusion_matrix = defaultdict(dict)
-    
+
     for i, sent in enumerate(sents):
         word_sent, gold_tag_sent = zip(*sent)
 
