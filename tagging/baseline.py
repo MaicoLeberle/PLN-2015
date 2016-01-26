@@ -34,15 +34,14 @@ class BaselineTagger:
 
         # Store most seen tag in the corpus.
         cur_count = 0
-        prev_processing = dict()
         self.most_seen_tag = ''
         for t in tags.keys():
-            prev_processing[t] = 0
+            aux = 0
             for w in tags[t].keys():
-                prev_processing[t] += tags[t][w]
+                aux += tags[t][w]
             # Now check if t represents the maximum so far.
-            if (prev_processing[t] > cur_count):
-                cur_count = prev_processing[t]
+            if (aux > cur_count):
+                cur_count = aux
                 self.most_seen_tag = t
         assert(self.most_seen_tag != '')
 
@@ -59,11 +58,12 @@ class BaselineTagger:
         w -- the word.
         """
         if (w in self.words.keys()):
-            # self.words[w] contains the most seen tags for such a word.
-            return ((self.words[w]))
+            # If w has been seen during training, then return the most seen tag
+            # associated with; i.e., self.words[w].
+            return (self.words[w])
         else:
-            # Assignment specifies the following is what should be returned
-            # in such a case.
+            # If w has not been seen during training, then return the most seen
+            # tag in the training corpus; i.e., self.most_seen_tag.
             return (self.most_seen_tag)
 
     def unknown(self, w):
