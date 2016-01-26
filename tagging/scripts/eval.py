@@ -8,7 +8,7 @@ Options:
   -i <file>     Tagging model file.
   -h --help     Show this screen.
 """
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pyplot
 import numpy as np
 from docopt import docopt
 import pickle
@@ -47,6 +47,11 @@ if __name__ == '__main__':
     hits_known, hits_unknown = 0, 0
     total_known, total_unknown = 0, 0
 
+    # For confusion matrix. They are going to be filled with every new 
+    # tag that the model returns (model_tags), or with the correct tag
+    gold_tags = set()
+    model_tags = set()
+
     confusion_matrix = defaultdict(dict)
 
     for i, sent in enumerate(sents):
@@ -54,6 +59,10 @@ if __name__ == '__main__':
 
         model_tag_sent = model.tag(word_sent)
         assert len(model_tag_sent) == len(gold_tag_sent), i
+
+        # Update gold_tags and model_tags sets.
+        gold_tags |= set(gold_tag_sent)
+        model_tags |= set(model_tag_sent)
 
         # known and unknown score
         total_errors = 0
@@ -79,7 +88,7 @@ if __name__ == '__main__':
 
         progress('{:3.1f}% ({:2.2f}%)'.format(float(i) * 100 / n, acc * 100))
 
-    # Results expected with respect to the model's accuracy.
+    # Results expected with regards to the model's accuracy.
     acc = float(hits) / total
     acc_known = float(hits_known) / total_known
     acc_unknown = float(hits_unknown) / total_unknown
@@ -89,32 +98,36 @@ if __name__ == '__main__':
     print('Accuracy known: {:2.2f}%'.format(acc_known * 100))
     print('Accuracy unknown: {:2.2f}%'.format(acc_unknown * 100))
 
-    gold_tags = list(confusion_matrix.keys())
-    cant_gold = len(confusion_matrix.keys())
-    keys = list(confusion_matrix.keys())
-
     # Build confusion matrix.
     cm = []
 
-    # Print Confusion Matrix in console
-    for gold_tag in confusion_matrix:
-        positions = [0] * len(gold_tags)
-        for t, v in confusion_matrix[gold_tag].items():
-            pos = 0
-            if t in gold_tags:
-                pos = gold_tags.index(t)
+    model_tags_list = sorted(list(model_tags))
+    cant_model_tags = len(model_tags)
+
+    gold_tags_list = sorted(list(gold_tags))
+    cant_gold_tags = len(gold_tags)
+
+    # First, print confusion matrix in CLI.
+    for gold_tag in gold_tags_list:
+        # Start by creating a row associated to gold_tag, all filled with 0s.
+        positions = [0] * cant_model_tags
+        for t, v in sorted(confusion_matrix[gold_tag].items(), key=lambda x:x[0]):
+            # Then, for every tag t returned by the model, insert the number 
+            # of times gold_tag was confused with t.
+            pos = model_tags_list.index(t)
             positions.remove(positions[pos])
             positions.insert(pos, v)
+        # Finally, insert the row in the confusion matrix.
         cm.append(positions)
-    # Show confusion matrix in a separate window
-    gold_tags_str = ' '.join([str(x) for x in gold_tags])
-    # plt.matshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-    plt.matshow(cm)
-    plt.xticks(np.arange(len(gold_tags)), tuple(gold_tags), rotation=90)
-    plt.yticks(np.arange(len(gold_tags)), tuple(gold_tags))
-    plt.title('Confusion matrix')
-    plt.colorbar()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
 
-    plt.show()
+    # Now show confusion matrix in a separate window.
+    pyplot.matshow(cm)
+    # Reference data.
+    pyplot.colorbar()
+    pyplot.title('Confusion matrix')
+    pyplot.ylabel('Right label')
+    pyplot.xlabel('Model-attributed label')
+    pyplot.xticks(np.arange(cant_model_tags), tuple(model_tags_list), rotation=90)
+    pyplot.yticks(np.arange(cant_gold_tags), tuple(gold_tags_list))
+
+    pyplot.show()
