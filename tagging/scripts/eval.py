@@ -107,7 +107,7 @@ if __name__ == '__main__':
     gold_tags_list = sorted(list(gold_tags))
     cant_gold_tags = len(gold_tags)
 
-    # First, print confusion matrix in CLI.
+    # First, build confusion matrix.
     for gold_tag in gold_tags_list:
         # Start by creating a row associated to gold_tag, all filled with 0s.
         positions = [0] * cant_model_tags

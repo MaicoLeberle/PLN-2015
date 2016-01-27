@@ -114,29 +114,28 @@ Los resultados obtenidos al entrenar modelos MLHMM son, dependiendo del valor
 de n:
 
 N = 1:
-
-	Time: 0m30.505s
-	Accuracy: 88.81%
-	Accuracy of known words: 90.0640383174908%.
-	Accuracy of unknown words: 9.935961682509205%.
+	Time: 0m36.956s
+	Accuracy: 89.01%
+	Accuracy of known words: 95.32%.
+	Accuracy of unknown words: 31.80%.
 
 N = 2:
-
-	Time: 0m31.865s
-	Accuracy: 92.16%
-	Accuracy of known words: 90.0640383174908%.
-	Accuracy of unknown words: 9.935961682509205%.
+	Time: 0m32.155s
+	Accuracy: 92.40%
+	Accuracy of known words: 97.42%.
+	Accuracy of unknown words: 46.97%.
 	
 N = 3:
-
-	Time: 2m9.417s
-	Accuracy: 83.49%
-	Accuracy of known words: 90.0640383174908%.
-	Accuracy of unknown words: 9.935961682509205%.
+	Time: 2m0.855s
+	Accuracy: 92.78%
+	Accuracy of known words: 97.44%.
+	Accuracy of unknown words: 50.55%.
 	
 N = 4:
-
-	Time: 29m25.166s
+	Time: 28m22.234s
+	Accuracy: 92.98%.
+	Accuracy of known words: 97.35%.
+	Accuracy of unknown words: 53.34%.
 
 Se incluyen, para este ejercicio, los mapas de calor que representan la 
 matrices de confusión del MLHMM (para distintos valores de N) en 

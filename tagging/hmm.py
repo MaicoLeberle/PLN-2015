@@ -227,23 +227,28 @@ class MLHMM:
         addone -- whether to use addone smoothing (default: True).
         """
         self._n = n
+        
         # self.__words_voc and self.__tags_voc are the set of words and tags
         # seen in training data, respectively. They will be needed mainly for
         # the addone smoothing (and the unknown method).
         self.__words_voc = set()
         self.__tags_voc = set()
+        
         # self.__counts_n, self.__counts_n_1 and self.__counts_1 will have the
         # number of appearances in the training data, related to n-grams,
         # (n-1)-grams and unigrams of tags, respectively.
         self.__counts_n = defaultdict(int)
         self.__counts_n_1 = defaultdict(int)
         self.__counts_1 = defaultdict(int)
+        
         # self.__counts_words will have the number of times certain tag has
         # been paired with a certain word
         self.__counts_words = dict()
+        
         # self.__e is the maximum likelihood estimator of seeing a word given
         # its tag.
         self.__e = dict()
+        
         # self.__q is the maximum likelihood estimator of finding a tag given
         # a (self._n - 1)-gram of previous tags.
         self.__q = defaultdict(float)
@@ -254,13 +259,16 @@ class MLHMM:
                 # if (self._n > 2):
                 #   # Update the number of occurrences of the unigram tag.
                 self.__counts_1[(tag,)] += 1
+                
                 # Update counts for this (tag, word) occurrence.
                 if (tag not in self.__counts_words.keys()):
                     self.__counts_words[tag] = defaultdict(int)
                 self.__counts_words[tag][word] += 1
+
                 # Add these word and tag to their respective sets.
                 self.__words_voc.add(word)
                 self.__tags_voc.add(tag)
+
             # Next, update counts for n-grams and (n-1)-grams.
             complete_sent = ('<s>',) * (self._n - 1)
             for (word, tag) in sent:
@@ -280,7 +288,8 @@ class MLHMM:
                                              + len(self.__tags_voc))
             else:
                 self.__q[prev_tags] = float(self.__counts_n[prev_tags])
-                if (prev_tags[:-1] in self.__counts_n_1.keys()):
+                if (self.__q[prev_tags] != 0):
+                    assert (prev_tags[:-1] in self.__counts_n_1.keys())
                     self.__q[prev_tags] /= self.__counts_n_1[prev_tags[:-1]]
 
         for tag in self.__tags_voc:
@@ -328,7 +337,7 @@ class MLHMM:
         if (prev_tags is None):
             prev_tags = ()
 
-        key = (tuple(reversed(prev_tags)) + (tag,))[-self._n:]
+        key = (tuple(prev_tags) + (tag,))[-self._n:]
         assert(len(key) == self._n)
 
         if (self.__q[key] != 0.0):
@@ -367,7 +376,7 @@ class MLHMM:
 
         for t in y:
             ret *= self.trans_prob(t, previous)
-            if (self._n != 1):
+            if (self._n > 1):
                 previous = previous[1:] + (t,)
 
         return (ret)
@@ -395,18 +404,19 @@ class MLHMM:
 
         y -- tagging.
         """
-        ret = 0.0
-        previous = ('<s>',) * (self._n - 1)
-        y = tuple(y) + ('</s>', )
+        # ret = 0.0
+        # previous = ('<s>',) * (self._n - 1)
+        # y = tuple(y) + ('</s>', )
 
-        for t in y:
-            # Since we are computing the log probability, then we have to add
-            # and not multiply the results.
-            ret += math.log2(self.trans_prob(t, previous))
-            if (self._n != 1):
-                previous = previous[1:] + (t,)
+        # for t in y:
+        #     # Since we are computing the log probability, then we have to add
+        #     # and not multiply the results.
+        #     ret += math.log2(self.trans_prob(t, previous))
+        #     if (self._n != 1):
+        #         previous = previous[1:] + (t,)
 
-        return (ret)
+        # return (ret)
+        return (math.log2(self.tag_prob()))
 
     def log_prob(self, x, y):
         """
@@ -415,18 +425,19 @@ class MLHMM:
         x -- sentence.
         y -- tagging.
         """
-        assert(len(x) == len(y))
+        # assert(len(x) == len(y))
 
-        # The probability of a tagging, given a sentence and according to
-        # Collins notes, depends on the probability of a tag, given its
-        # context, and the probability of the word found, given that tag.
-        ret = self.tag_log_prob(y)
-        for i in range(len(x)):
-            # Since we are computing the log probability, then we have to add
-            # and not multiply the results.
-            ret += math.log2(self.out_prob(x[i], y[i]))
+        # # The probability of a tagging, given a sentence and according to
+        # # Collins notes, depends on the probability of a tag, given its
+        # # context, and the probability of the word found, given that tag.
+        # ret = self.tag_log_prob(y)
+        # for i in range(len(x)):
+        #     # Since we are computing the log probability, then we have to add
+        #     # and not multiply the results.
+        #     ret += math.log2(self.out_prob(x[i], y[i]))
 
-        return (ret)
+        # return (ret)
+        return (math.log2(self.prob(x, y)))
 
     def tag(self, sent):
         """Returns the most probable tagging for a sentence.
