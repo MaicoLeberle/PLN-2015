@@ -47,7 +47,7 @@ if __name__ == '__main__':
     hits_known, hits_unknown = 0, 0
     total_known, total_unknown = 0, 0
 
-    # For confusion matrix. They are going to be filled with every new 
+    # For confusion matrix. They are going to be filled with every new
     # tag that the model returns (model_tags), or with the correct tag
     gold_tags = set()
     model_tags = set()
@@ -111,8 +111,9 @@ if __name__ == '__main__':
     for gold_tag in gold_tags_list:
         # Start by creating a row associated to gold_tag, all filled with 0s.
         positions = [0] * cant_model_tags
-        for t, v in sorted(confusion_matrix[gold_tag].items(), key=lambda x:x[0]):
-            # Then, for every tag t returned by the model, insert the number 
+        for t, v in sorted(confusion_matrix[gold_tag].items(),
+                           key=lambda x: x[0]):
+            # Then, for every tag t returned by the model, insert the number
             # of times gold_tag was confused with t.
             pos = model_tags_list.index(t)
             positions.remove(positions[pos])
@@ -127,7 +128,8 @@ if __name__ == '__main__':
     pyplot.title('Confusion matrix')
     pyplot.ylabel('Right label')
     pyplot.xlabel('Model-attributed label')
-    pyplot.xticks(np.arange(cant_model_tags), tuple(model_tags_list), rotation=90)
+    pyplot.xticks(np.arange(cant_model_tags), tuple(model_tags_list),
+                  rotation=90)
     pyplot.yticks(np.arange(cant_gold_tags), tuple(gold_tags_list))
 
     pyplot.show()

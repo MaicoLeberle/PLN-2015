@@ -128,4 +128,4 @@ class MEMM:
 
         w -- the word.
         """
-        return (w in self.__voc)
+        return (w not in self.__voc)

@@ -169,88 +169,77 @@ Los resultados obtenidos al entrenar modelos MLHMM son, dependiendo del valor
 de n y del clasificador utilizado:
 
 N = 1, clasificador = linear_model.LogisticRegression:
-
-	Time: 0m50.215s
-	Accuracy: 92.70%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
+	Time: 0m34.629s.
+	Accuracy: 92.70%.
+	Accuracy known: 95.28%.
+	Accuracy unknown: 69.31%.
 
 N = 2, clasificador = linear_model.LogisticRegression:
-
-	Time: 0m38.826s
-	Accuracy: 91.99%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
+	Time: 0m39.965s
+	Accuracy: 91.99%.
+	Accuracy known: 94.55%.
+	Accuracy unknown: 68.76%.
 	
 N = 3, clasificador = linear_model.LogisticRegression:
-
-	Time: 0m54.151s
-	Accuracy: 92.18%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
+	Time: 0m42.732s.
+	Accuracy: 92.18%.
+	Accuracy known: 94.72%.
+	Accuracy unknown: 69.20%.
 	
 N = 4, clasificador = linear_model.LogisticRegression:
-
-	Time: 0m53.532s
-	Accuracy: 92.23%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
+	Time: 0m44.772s.
+	Accuracy: 92.23%.
+	Accuracy known: 94.72%.
+	Accuracy unknown: 69.63%.
 	
 N = 1, clasificador = svm.LinearSVC:
+	Time: 0m35.437s
+	Accuracy: 94.43%.
+	Accuracy known: 97.04%.
+	Accuracy unknown: 70.82%.
 
-	Time: 0m43.646s
-	Accuracy: 94.43%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
-	
 N = 2, clasificador = svm.LinearSVC:
-
-	Time: 0m48.687s
-	Accuracy: 94.29%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
+	Time: 0m40.858s.
+	Accuracy: 94.29%.
+	Accuracy known: 96.91%.
+	Accuracy unknown: 70.57%.
 	
 N = 3, clasificador = svm.LinearSVC:
+	Time: 0m40.368s.
+	Accuracy: 94.40%.
+	Accuracy known: 96.94%.
+	Accuracy unknown: 71.38%.
 
-	Time: 0m54.834s
-	Accuracy: 94.40%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
-	
 N = 4, clasificador = svm.LinearSVC:
+	Time: 0m42.432s.
+	Accuracy: 94.46%.
+	Accuracy known: 96.96%.
+	Accuracy unknown: 71.81%.
 
-	Time: 0m42.796s
-	Accuracy: 94.46%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
-	
 N = 1, clasificador = naive_bayes.MultinomialNB:
-	
-	Time: 44m16.957s
-	Accuracy: 82.18%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
+	Time: 34m39.690s.
+	Accuracy: 82.18%.
+	Accuracy known: 85.85%.
+	Accuracy unknown: 48.89%.
 	
 N = 2, clasificador = naive_bayes.MultinomialNB:
-
-	Time: 59m11.925s
-	Accuracy: 76.46%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
+	Time: 33m1.545s.
+	Accuracy: 76.46%.
+	Accuracy known: 80.41%.
+	Accuracy unknown: 40.68%.
 	
 N = 3, clasificador = naive_bayes.MultinomialNB:
+	Time: 35m30.314s.
+	Accuracy: 71.47%.
+	Accuracy known: 75.09%.
+	Accuracy unknown: 38.59%.
 
-	Time: 61m7.078s
-	Accuracy: 71.47%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
 	
 N = 4, clasificador = naive_bayes.MultinomialNB:
-
-	Time: 61m9.887s
-	Accuracy: 68.20%
-	Accuracy of known words: 9.935961682509205%.
-	Accuracy of unknown words: 90.0640383174908%.
+	Time: 31m47.225s.
+	Accuracy: 68.20%.
+	Accuracy known: 71.31%.
+	Accuracy unknown: 40.01%.
 
 Se incluyen, para este ejercicio, los mapas de calor que representan la 
 matrices de confusión del MEMM (para distintos valores de N, y distintos

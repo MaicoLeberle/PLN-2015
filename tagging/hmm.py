@@ -227,28 +227,28 @@ class MLHMM:
         addone -- whether to use addone smoothing (default: True).
         """
         self._n = n
-        
+
         # self.__words_voc and self.__tags_voc are the set of words and tags
         # seen in training data, respectively. They will be needed mainly for
         # the addone smoothing (and the unknown method).
         self.__words_voc = set()
         self.__tags_voc = set()
-        
+
         # self.__counts_n, self.__counts_n_1 and self.__counts_1 will have the
         # number of appearances in the training data, related to n-grams,
         # (n-1)-grams and unigrams of tags, respectively.
         self.__counts_n = defaultdict(int)
         self.__counts_n_1 = defaultdict(int)
         self.__counts_1 = defaultdict(int)
-        
+
         # self.__counts_words will have the number of times certain tag has
         # been paired with a certain word
         self.__counts_words = dict()
-        
+
         # self.__e is the maximum likelihood estimator of seeing a word given
         # its tag.
         self.__e = dict()
-        
+
         # self.__q is the maximum likelihood estimator of finding a tag given
         # a (self._n - 1)-gram of previous tags.
         self.__q = defaultdict(float)
@@ -259,7 +259,7 @@ class MLHMM:
                 # if (self._n > 2):
                 #   # Update the number of occurrences of the unigram tag.
                 self.__counts_1[(tag,)] += 1
-                
+
                 # Update counts for this (tag, word) occurrence.
                 if (tag not in self.__counts_words.keys()):
                     self.__counts_words[tag] = defaultdict(int)
