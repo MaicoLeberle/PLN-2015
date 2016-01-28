@@ -404,19 +404,7 @@ class MLHMM:
 
         y -- tagging.
         """
-        # ret = 0.0
-        # previous = ('<s>',) * (self._n - 1)
-        # y = tuple(y) + ('</s>', )
-
-        # for t in y:
-        #     # Since we are computing the log probability, then we have to add
-        #     # and not multiply the results.
-        #     ret += math.log2(self.trans_prob(t, previous))
-        #     if (self._n != 1):
-        #         previous = previous[1:] + (t,)
-
-        # return (ret)
-        return (math.log2(self.tag_prob()))
+        return (math.log2(self.tag_prob(y)))
 
     def log_prob(self, x, y):
         """
@@ -425,18 +413,6 @@ class MLHMM:
         x -- sentence.
         y -- tagging.
         """
-        # assert(len(x) == len(y))
-
-        # # The probability of a tagging, given a sentence and according to
-        # # Collins notes, depends on the probability of a tag, given its
-        # # context, and the probability of the word found, given that tag.
-        # ret = self.tag_log_prob(y)
-        # for i in range(len(x)):
-        #     # Since we are computing the log probability, then we have to add
-        #     # and not multiply the results.
-        #     ret += math.log2(self.out_prob(x[i], y[i]))
-
-        # return (ret)
         return (math.log2(self.prob(x, y)))
 
     def tag(self, sent):
